@@ -1,0 +1,8 @@
+# Optional only; not included by the base requirements.
+# Verified from official PyPI JSON metadata on 2026-10-25 (not installed here).
+# https://pypi.org/pypi/faster-whisper/1.2.1/json
+# https://pypi.org/pypi/ctranslate2/4.8.4/json
+# Direct runtime pins; this is not a full transitive dependency lock.
+# python -m pip install -r backend/requirements-audio.txt
+faster-whisper==1.2.1
+ctranslate2==4.8.4
