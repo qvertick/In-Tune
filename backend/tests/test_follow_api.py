@@ -20,7 +20,7 @@ def setup(tmp_path, monkeypatch):
           'sections':[{'id':uid(),'name':'Куплет','lines':lines}],
           'performance':{'fontSize':24,'bpm':90,'beats':4},'audio':None,
           'source':'manual','updatedAt':'2026-10-25T12:00:00Z'}
-    with TestClient(create_app(tmp_path)) as client:
+    with TestClient(create_app(tmp_path, legacy_follow=True)) as client:
         assert client.post('/api/songs',json=song).status_code==201
         response=client.post('/api/follow/sessions',json={'songId':song['id'],'lineId':lines[0]['id'],'language':'ru'})
         assert response.status_code==201,response.text
@@ -143,7 +143,7 @@ def test_stop_cancels_inflight_and_batch_analysis_is_excluded(setup,monkeypatch)
 
 def test_missing_model_command_and_other_api_remains_available(tmp_path,monkeypatch):
     monkeypatch.setattr(follow_provider,'MODEL_ROOT',tmp_path/'absent')
-    with TestClient(create_app(tmp_path/'data')) as client:
+    with TestClient(create_app(tmp_path/'data', legacy_follow=True)) as client:
         response=client.post('/api/follow/sessions',json={'songId':str(uuid4()),'lineId':str(uuid4()),'language':'uk'})
         assert response.status_code==503 and 'install-follow.ps1 -Language uk' in response.json()['detail']
         assert client.get('/api/songs').status_code==200

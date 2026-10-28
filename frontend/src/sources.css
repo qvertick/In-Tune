@@ -1,0 +1,215 @@
+.library-mode {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 24px;
+  flex-wrap: wrap;
+}
+.library-mode button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.source-search {
+  max-width: 1100px;
+}
+.source-search-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.source-search-intro h2 {
+  margin-bottom: 8px;
+}
+.source-link-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin: 20px 0;
+}
+.source-link-form label {
+  flex: 1;
+  min-width: 0;
+}
+.source-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.source-status {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 6px 10px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 0;
+}
+.source-status small,
+.source-status p,
+.source-status a {
+  grid-column: 2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.source-status p {
+  color: var(--muted);
+  margin: 0;
+  white-space: pre-line;
+}
+.source-status a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.source-initial {
+  display: inline-grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.source-result-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  margin-block: 16px;
+}
+.source-result-group h3 {
+  font-size: 17px;
+  margin: 0 0 16px;
+}
+.source-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block: 10px;
+  border-top: 1px solid var(--border);
+}
+.source-result > div {
+  flex: 1;
+  min-width: 0;
+}
+.source-result small {
+  display: block;
+  color: var(--muted);
+}
+.recommendation {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--accent);
+}
+.manual-import {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.manual-import summary {
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.manual-import-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.manual-import textarea {
+  font-family: ui-monospace, Consolas, "Courier New", monospace;
+  white-space: pre;
+  overflow-x: auto;
+}
+.manual-import > label {
+  margin-block: 15px;
+}
+.source-preview {
+  width: min(850px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 26px;
+}
+.source-preview header,
+.source-preview footer {
+  display: flex;
+  gap: 14px;
+  align-items: start;
+  justify-content: space-between;
+}
+.source-preview header h2 {
+  margin: 0 0 6px;
+}
+.source-preview footer {
+  align-items: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.source-preview-lyrics {
+  margin-top: 22px;
+  min-width: 0;
+}
+.source-preview-lyrics h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 24px 0 8px;
+}
+.source-preview-lyrics .lyric-preview {
+  margin-block: 12px;
+}
+.source-credit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+  margin-block: 15px;
+}
+.source-credit a {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+@media (max-width: 650px) {
+  .source-status-grid {
+    grid-template-columns: 1fr;
+  }
+  .source-search-intro {
+    align-items: start;
+    flex-direction: column;
+  }
+  .source-link-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .manual-import-meta {
+    grid-template-columns: 1fr;
+  }
+  .source-result {
+    flex-wrap: wrap;
+  }
+  .source-result button {
+    margin-left: 40px;
+  }
+  .source-preview {
+    padding: 16px;
+  }
+  .recommendation {
+    margin: 6px 0 0;
+    display: table;
+  }
+}

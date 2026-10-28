@@ -25,6 +25,9 @@ from .audio import AnalysisError
 from .jobs import Jobs, QueueFull
 from .providers import provider_health
 from .follow import Following
+from .sources import router as sources_router
+from .lrclib import router as lrclib_router
+from .separation import separation_router
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_AUDIO_LIMIT = 50 * 1024 * 1024
@@ -34,7 +37,7 @@ def now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def create_app(data_dir: str | Path | None = None, static_dir: str | Path | None = None, max_audio_bytes: int | None = None):
+def create_app(data_dir: str | Path | None = None, static_dir: str | Path | None = None, max_audio_bytes: int | None = None, *, legacy_follow: bool = False):
     root = Path(data_dir or os.environ.get("VLAD_DATA_DIR", ROOT / "data")).resolve()
     frontend = Path(static_dir or ROOT / "frontend" / "dist").resolve()
     limit = max_audio_bytes if max_audio_bytes is not None else int(os.environ.get("VLAD_MAX_AUDIO_BYTES", DEFAULT_AUDIO_LIMIT))
@@ -57,7 +60,11 @@ def create_app(data_dir: str | Path | None = None, static_dir: str | Path | None
 
     app = FastAPI(title="In Tune API", version="1.0.0", lifespan=lifespan)
     app.add_middleware(JsonBodyLimit)
-    app.include_router(following.router())
+    if legacy_follow:
+        app.include_router(following.router())
+    app.include_router(sources_router)
+    app.include_router(lrclib_router)
+    app.include_router(separation_router(lambda: app.state.store, lambda: app.state.jobs))
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(request: Request, exc: StarletteHTTPException):

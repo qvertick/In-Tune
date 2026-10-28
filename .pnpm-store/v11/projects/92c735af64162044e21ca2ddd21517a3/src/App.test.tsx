@@ -11,6 +11,10 @@ import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { createSong, type Song } from "./model";
 
+// These are complete editor workflows with many real user events and autosaves.
+// A small CPU must not fail them solely on Vitest's five-second default.
+vi.setConfig({ testTimeout: 15000 });
+
 let documents: Map<string, Song>;
 let failSaves = false;
 let releaseUpload: (() => void) | undefined;
@@ -242,7 +246,10 @@ describe("editor workflows in simulated DOM", () => {
       timeout: 2500,
     });
     expect(current().sections[0].lines[0].chords[0].offset).toBe(3);
-    expect(current().sections[0].lines[1].text).toBe("Новая строка");
+    await waitFor(
+      () => expect(current().sections[0].lines[1].text).toBe("Новая строка"),
+      { timeout: 2500 },
+    );
   });
 
   it("keeps a failed save in an emergency draft and restores it after reopening", async () => {

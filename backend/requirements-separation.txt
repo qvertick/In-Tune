@@ -1,0 +1,3 @@
+# Optional isolated environment only. Install CPU PyTorch first.
+# All verified transitive versions and the source archive hash are pinned.
+-r requirements-separation-lock.txt

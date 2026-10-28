@@ -1,6 +1,11 @@
+import { useI18n, translateError, I18nProvider } from "./i18n";
+import { useChordLayer } from "./chordLayer";
+import DisclosureSummary from "./DisclosureSummary";
 import { validWords } from "./timeline";
 import {
   memo,
+  lazy,
+  Suspense,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -29,7 +34,17 @@ import {
 } from "lucide-react";
 import { APP_NAME } from "./config";
 import { createSong, id, normalizeChord, type Song, type Line } from "./model";
-import Performance from "./Performance";
+const Performance = lazy(() => import("./Performance"));
+const LrclibDialog = lazy(() => import("./LrclibDialog"));
+import PolicyFooter from "./PolicyFooter";
+import SourceSearch from "./SourceSearch";
+import SongStatus from "./SongStatus";
+const SOURCE_NAMES: Record<string, string> = {
+  akkords: "Akkords.pro",
+  mychords: "MyChords.net",
+  chorder: "Chorder.ru",
+  ultimate: "Ultimate Guitar",
+};
 import { splitLine } from "./document";
 
 import { api } from "./api";
@@ -68,6 +83,7 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current!;
@@ -88,7 +104,7 @@ function Modal({
     >
       <div className="modal-head">
         <h2>{title}</h2>
-        <IconButton title="Закрыть" onClick={onClose}>
+        <IconButton title={t("Закрыть")} onClick={onClose}>
           <X size={19} />
         </IconButton>
       </div>
@@ -121,6 +137,7 @@ function ChordPopover({
   onMove: () => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(target.bottom + 8);
   useLayoutEffect(() => {
@@ -171,12 +188,12 @@ function ChordPopover({
     <div
       ref={ref}
       role="dialog"
-      aria-label="Выбор аккорда"
+      aria-label={t("Выбор аккорда")}
       className="popover"
       style={{ left: Math.max(12, Math.min(target.x, innerWidth - 332)), top }}
     >
       <p className="overline">
-        {target.occurrenceId ? "Заменить аккорд" : "Добавить аккорд"}
+        {target.occurrenceId ? t("Заменить аккорд") : t("Добавить аккорд")}
       </p>
       <div className="chord-options">
         {song.palette.map((c) => (
@@ -187,17 +204,17 @@ function ChordPopover({
       </div>
       <button className="popover-command" onClick={onNew}>
         <Plus size={16} />
-        Другой аккорд…
+        {t("Другой аккорд…")}
       </button>
       {target.occurrenceId && (
         <>
           <button className="popover-command" onClick={onMove}>
             <MoveRight size={16} />
-            Переместить…
+            {t("Переместить…")}
           </button>
           <button className="popover-command danger" onClick={onDelete}>
             <Trash2 size={16} />
-            Удалить в этом месте
+            {t("Удалить в этом месте")}
           </button>
         </>
       )}
@@ -211,6 +228,7 @@ function ChordCreator({
   onDone: (name: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
   const [root, setRoot] = useState("A");
   const [acc, setAcc] = useState("");
@@ -225,7 +243,7 @@ function ChordCreator({
     setValue(r + a + q + (b ? "/" + b : ""));
   }
   return (
-    <Modal title="Новый аккорд" onClose={onClose}>
+    <Modal title={t("Новый аккорд")} onClose={onClose}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -233,10 +251,10 @@ function ChordCreator({
         }}
       >
         <label>
-          Название
+          {t("Название")}
           <input
             autoFocus
-            placeholder="F♯m или D/F♯"
+            placeholder={t("F♯m или D/F♯")}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             maxLength={24}
@@ -244,7 +262,7 @@ function ChordCreator({
         </label>
         <div className="builder">
           <label>
-            Основа
+            {t("Основа")}
             <select
               value={root}
               onChange={(e) => build(e.target.value, acc, quality, bass)}
@@ -255,18 +273,18 @@ function ChordCreator({
             </select>
           </label>
           <label>
-            Знак
+            {t("Знак")}
             <select
               value={acc}
               onChange={(e) => build(root, e.target.value, quality, bass)}
             >
-              <option value="">Нет</option>
+              <option value="">{t("Нет")}</option>
               <option>♯</option>
               <option>♭</option>
             </select>
           </label>
           <label>
-            Тип
+            {t("Тип")}
             <select
               value={quality}
               onChange={(e) => build(root, acc, e.target.value, bass)}
@@ -290,7 +308,7 @@ function ChordCreator({
             </select>
           </label>
           <label>
-            Бас
+            {t("Бас")}
             <input
               value={bass}
               placeholder="F♯"
@@ -301,13 +319,15 @@ function ChordCreator({
         <p className="muted">
           {value
             ? normalized
-              ? `Будет добавлен ${normalized}`
-              : "Используйте A–G, ♯/♭, тип из списка и необязательный бас A–G."
-            : "Введите название или соберите аккорд."}
+              ? t("Будет добавлен {normalized}", { normalized: normalized })
+              : t(
+                  "Используйте A–G, ♯/♭, тип из списка и необязательный бас A–G.",
+                )
+            : t("Введите название или соберите аккорд.")}
         </p>
         <button className="primary" disabled={!normalized} type="submit">
           <Check size={17} />
-          Добавить
+          {t("Добавить")}
         </button>
       </form>
     </Modal>
@@ -330,6 +350,8 @@ export const Lyrics = memo(function Lyrics({
   large?: boolean;
   position?: number;
 }) {
+  const { t } = useI18n();
+  const lyricRoot = useChordLayer(line, song.palette);
   const chars = Array.from(line.text);
   const groups: { char: string; offset: number }[][] = [];
   let offset = 0;
@@ -339,15 +361,17 @@ export const Lyrics = memo(function Lyrics({
   groups.push([{ char: "", offset: chars.length }]);
   return (
     <div
+      ref={lyricRoot}
       className={"lyric-preview" + (large ? " large" : "")}
-      aria-label={line.text || "Инструментальная строка"}
+      aria-label={line.text || t("Инструментальная строка")}
     >
       {groups.map((group, index) => (
         <span
           className={
             "lyric-word" +
             (position !== undefined && validWords(line) && line.words?.[index]
-              ? " timed-word" + (position >= line.words[index].start ? " word-reached" : "")
+              ? " timed-word" +
+                (position >= line.words[index].start ? " word-reached" : "")
               : "")
           }
           key={index}
@@ -374,8 +398,12 @@ export const Lyrics = memo(function Lyrics({
                       <button
                         className="chord"
                         key={c.id}
-                        title="Заменить аккорд"
-                        aria-label={`Аккорд ${song.palette.find((p) => p.id === c.paletteId)?.name}, позиция ${offset + 1}`}
+                        title={t("Заменить аккорд")}
+                        aria-label={t("Аккорд {value0}, позиция {value1}", {
+                          value0: song.palette.find((p) => p.id === c.paletteId)
+                            ?.name,
+                          value1: offset + 1,
+                        })}
                         onClick={(e) =>
                           onPosition(offset, c.id, e.currentTarget)
                         }
@@ -392,7 +420,10 @@ export const Lyrics = memo(function Lyrics({
                 {onPosition ? (
                   <button
                     className="letter"
-                    aria-label={`Поставить аккорд: ${char || "конец строки"}, позиция ${offset + 1}`}
+                    aria-label={t(
+                      "Поставить аккорд: {value0}, позиция {value1}",
+                      { value0: char || t("конец строки"), value1: offset + 1 },
+                    )}
                     onClick={(e) =>
                       onPosition(offset, undefined, e.currentTarget)
                     }
@@ -412,15 +443,19 @@ export const Lyrics = memo(function Lyrics({
     </div>
   );
 });
-export default function App() {
+function AppContent() {
+  const { t, locale, setLocale, formatDate } = useI18n();
   const [songs, setSongs] = useState<Song[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<
     "library" | "editor" | "performance" | "settings"
   >("library");
   const [query, setQuery] = useState("");
+  const [libraryMode, setLibraryMode] = useState<"local" | "sources">("local");
+  const [sourceSearchNonce, setSourceSearchNonce] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [syncSearch, setSyncSearch] = useState(false);
   const [states, setStates] = useState<Record<string, string>>({});
   const [past, setPast] = useState<Song[]>([]);
   const [future, setFuture] = useState<Song[]>([]);
@@ -831,7 +866,7 @@ export default function App() {
             <Music2 size={23} />
           </span>
           {APP_NAME}
-          <span className="local-dot" title="Локальное приложение" />
+          <span className="local-dot" title={t("Локальное приложение")} />
         </button>
         <nav>
           <button
@@ -839,7 +874,8 @@ export default function App() {
             onClick={() => setView("library")}
           >
             <Library size={19} />
-            Библиотека<span>{songs.length}</span>
+            {t("Библиотека")}
+            <span>{songs.length}</span>
           </button>
           {song && (
             <button
@@ -849,7 +885,7 @@ export default function App() {
               onClick={() => setView("editor")}
             >
               <BookOpen size={19} />
-              Открытая песня
+              {t("Открытая песня")}
             </button>
           )}
           <button
@@ -857,12 +893,12 @@ export default function App() {
             onClick={() => setView("settings")}
           >
             <Settings2 size={19} />
-            Настройки
+            {t("Настройки")}
           </button>
         </nav>
         <div className="sidebar-bottom">
-          <span className="local-dot" /> На этом компьютере
-          <p>Ваша музыка остаётся у вас.</p>
+          <span className="local-dot" /> {t(" На этом компьютере")}
+          <p>{t("Ваша музыка остаётся у вас.")}</p>
         </div>
       </aside>
       <main>
@@ -907,8 +943,11 @@ export default function App() {
         />
         {error && (
           <div className="error" role="alert">
-            {error}
-            <IconButton title="Закрыть сообщение" onClick={() => setError("")}>
+            {translateError(locale, error)}
+            <IconButton
+              title={t("Закрыть сообщение")}
+              onClick={() => setError("")}
+            >
               <X size={17} />
             </IconButton>
           </div>
@@ -917,22 +956,24 @@ export default function App() {
           <>
             <header className="page-header">
               <div>
-                <p className="overline">Личное пространство</p>
-                <h1>Библиотека</h1>
-                <p className="muted">Песни, к которым хочется возвращаться.</p>
+                <p className="overline">{t("Личное пространство")}</p>
+                <h1>{t("Библиотека")}</h1>
+                <p className="muted">
+                  {t("Песни, к которым хочется возвращаться.")}
+                </p>
               </div>
               <div className="actions">
                 <button onClick={() => audioInput.current?.click()}>
                   <Upload size={17} />
-                  Загрузить MP3
+                  {t("Загрузить MP3")}
                 </button>
                 <button onClick={() => importer.current?.click()}>
                   <Upload size={17} />
-                  Импорт JSON
+                  {t("Импорт JSON")}
                 </button>
                 <button className="primary" onClick={() => void create()}>
                   <Plus size={18} />
-                  Новая песня
+                  {t("Новая песня")}
                 </button>
               </div>
             </header>
@@ -940,32 +981,75 @@ export default function App() {
               <label className="search">
                 <Search size={18} />
                 <input
-                  aria-label="Поиск песен"
-                  placeholder="Название или исполнитель"
+                  aria-label={t("Поиск песен")}
+                  placeholder={t("Название песни или исполнитель")}
                   value={query}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && query.trim()) {
+                      setLibraryMode("sources");
+                      setSourceSearchNonce((n) => n + 1);
+                    }
+                  }}
+                  onPaste={(e) => {
+                    if (
+                      /^https?:\/\//i.test(
+                        e.clipboardData.getData("text").trim(),
+                      )
+                    ) {
+                      setLibraryMode("sources");
+                      setSourceSearchNonce((n) => n + 1);
+                    }
+                  }}
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </label>
-              <span className="muted">{songs.length} песен</span>
+              <span className="muted">
+                {songs.length} {t(" песен")}
+              </span>
             </div>
-            {loading ? (
-              <p className="empty">Открываю библиотеку…</p>
+            <div className="library-mode" aria-label={t("Где искать")}>
+              <button
+                aria-pressed={libraryMode === "local"}
+                onClick={() => setLibraryMode("local")}
+              >
+                {t("Моя библиотека")}
+              </button>
+              <button
+                aria-pressed={libraryMode === "sources"}
+                onClick={() => setLibraryMode("sources")}
+              >
+                {t("Найти разбор")}
+              </button>
+            </div>
+            {libraryMode === "sources" ? (
+              <SourceSearch
+                query={query}
+                autoSearch={sourceSearchNonce}
+                songs={songs}
+                onOpen={open}
+                onAdded={(created) => {
+                  setSongs((current) => [created, ...current]);
+                  open(created.id);
+                }}
+              />
+            ) : loading ? (
+              <p className="empty">{t("Открываю библиотеку…")}</p>
             ) : songs.length === 0 ? (
               <div className="empty">
                 <Music2 size={42} />
-                <h2>Начните со своей песни</h2>
+                <h2>{t("Начните со своей песни")}</h2>
                 <p>
-                  Создайте песню, добавьте текст и расставьте аккорды.
+                  {t("Создайте песню, добавьте текст и расставьте аккорды.")}
                   <br />
-                  Готовую карточку можно перенести через JSON.
+                  {t("Готовую карточку можно перенести через JSON.")}
                 </p>
                 <div className="actions">
                   <button className="primary" onClick={() => void create()}>
                     <Plus size={17} />
-                    Создать песню
+                    {t("Создать песню")}
                   </button>
                   <button onClick={() => void create(true)}>
-                    Открыть авторский пример
+                    {t("Открыть авторский пример")}
                   </button>
                 </div>
               </div>
@@ -974,8 +1058,8 @@ export default function App() {
                 {songs
                   .filter((s) =>
                     (s.title + " " + s.artist)
-                      .toLocaleLowerCase()
-                      .includes(query.toLocaleLowerCase()),
+                      .toLocaleLowerCase(locale)
+                      .includes(query.toLocaleLowerCase(locale)),
                   )
                   .map((s, index) => (
                     <article className="song-row" key={s.id}>
@@ -984,34 +1068,55 @@ export default function App() {
                       </span>
                       <button className="song-open" onClick={() => open(s.id)}>
                         <span className="song-title">
-                          {s.title || "Без названия"}
+                          {s.title || t("Без названия")}
                         </span>
                         <span className="muted">
-                          {s.artist || "Исполнитель не указан"}
+                          {s.artist || t("Исполнитель не указан")}
                         </span>
                       </button>
                       <span className="language">
-                        {{ ru: "РУ", uk: "УКР", en: "EN" }[s.language]}
+                        {{ ru: t("РУ"), uk: t("УКР"), en: "EN" }[s.language]}
                       </span>
                       <span className="song-meta">
-                        {s.audio ? "С аудио" : "Текст и аккорды"}
+                        {s.audio ? t("С аудио") : t("Текст и аккорды")}
                         <small>
-                          {s.source === "model"
-                            ? "Черновик анализа"
-                            : "Ручная редакция"}
+                          {s.origin
+                            ? t("Разбор импортирован")
+                            : s.source === "model"
+                              ? t("Черновик анализа")
+                              : t("Ручная редакция")}
                         </small>
+                        <small>
+                          {s.sections.some((section) =>
+                            section.lines.some(
+                              (line) =>
+                                line.start !== undefined && !line.timingReview,
+                            ),
+                          )
+                            ? t("Есть синхронизация")
+                            : t("Без синхронизации")}
+                        </small>
+                        <button
+                          className="song-sync-link"
+                          onClick={() => {
+                            open(s.id);
+                            setSyncSearch(true);
+                          }}
+                        >
+                          {t("Найти синхронизацию")}
+                        </button>
                       </span>
                       <time dateTime={s.updatedAt}>
-                        {new Date(s.updatedAt).toLocaleDateString("ru-RU")}
+                        {formatDate(s.updatedAt)}
                       </time>
                       <IconButton
-                        title="Переименовать"
+                        title={t("Переименовать")}
                         onClick={() => open(s.id)}
                       >
                         <Pencil size={16} />
                       </IconButton>
                       <IconButton
-                        title={`Удалить ${s.title}`}
+                        title={t("Удалить {value0}", { value0: s.title })}
                         onClick={() => setDeleteId(s.id)}
                       >
                         <Trash2 size={16} />
@@ -1023,14 +1128,15 @@ export default function App() {
                     (s.title + " " + s.artist)
                       .toLowerCase()
                       .includes(query.toLowerCase()),
-                  ) && <p className="empty">Песни не найдены.</p>}
+                  ) && <p className="empty">{t("Песни не найдены.")}</p>}
               </div>
             )}
             <footer className="library-footer">
-              Локальная библиотека{" "}
+              {t("Локальная библиотека")}{" "}
               <span>
-                JSON-экспорт сохраняет текст и аккорды. MP3 переносится
-                отдельно.
+                {t(
+                  "JSON сохраняет текст, аккорды и разметку. Аудио и дорожки переносятся отдельно.",
+                )}
               </span>
             </footer>
           </>
@@ -1043,7 +1149,7 @@ export default function App() {
                 onClick={() => setView("library")}
               >
                 <ArrowLeft size={17} />
-                Библиотека
+                {t("Библиотека")}
               </button>
               <div className="actions">
                 <span
@@ -1054,10 +1160,10 @@ export default function App() {
                   role="status"
                 >
                   <span className="local-dot" />
-                  {states[song.id] || "Сохранено"}
+                  {t(states[song.id] || "Сохранено")}
                 </span>
                 <IconButton
-                  title="Сохранить сейчас"
+                  title={t("Сохранить сейчас")}
                   onClick={() => {
                     clearTimeout(timers.current[song.id]);
                     save(song);
@@ -1065,7 +1171,10 @@ export default function App() {
                 >
                   <Save size={17} />
                 </IconButton>
-                <IconButton title="Экспорт JSON без MP3" onClick={exportSong}>
+                <IconButton
+                  title={t("Экспорт JSON без MP3")}
+                  onClick={exportSong}
+                >
                   <Download size={18} />
                 </IconButton>
                 <button
@@ -1076,38 +1185,38 @@ export default function App() {
                   }}
                 >
                   <Play size={16} />
-                  Исполнять
+                  {t("Открыть плеер")}
                 </button>
               </div>
             </header>
             <div className="song-heading">
-              <p className="overline">Редактор песни</p>
+              <p className="overline">{t("Редактор песни")}</p>
               <input
                 className="title-input"
-                aria-label="Название песни"
+                aria-label={t("Название песни")}
                 value={song.title}
                 onChange={(e) =>
                   mutate((d) => {
                     d.title = e.target.value;
                   })
                 }
-                placeholder="Название песни"
+                placeholder={t("Название песни")}
                 maxLength={200}
               />
               <div className="song-details">
                 <input
-                  aria-label="Исполнитель"
+                  aria-label={t("Исполнитель")}
                   value={song.artist}
                   onChange={(e) =>
                     mutate((d) => {
                       d.artist = e.target.value;
                     })
                   }
-                  placeholder="Исполнитель"
+                  placeholder={t("Исполнитель")}
                   maxLength={200}
                 />
                 <select
-                  aria-label="Язык песни"
+                  aria-label={t("Язык песни")}
                   value={song.language}
                   onChange={(e) =>
                     mutate((d) => {
@@ -1115,15 +1224,15 @@ export default function App() {
                     })
                   }
                 >
-                  <option value="ru">Русский</option>
-                  <option value="uk">Українська</option>
+                  <option value="ru">{t("Русский")}</option>
+                  <option value="uk">{t("Українська")}</option>
                   <option value="en">English</option>
                 </select>
               </div>
             </div>
             <div className="editor-toolbar">
               <div>
-                <span className="overline">Аккорды песни</span>
+                <span className="overline">{t("Аккорды песни")}</span>
                 <div className="palette">
                   {song.palette.map((c) => (
                     <span className="palette-chord" key={c.id}>
@@ -1131,7 +1240,7 @@ export default function App() {
                     </span>
                   ))}
                   <IconButton
-                    title="Добавить аккорд в палитру"
+                    title={t("Добавить аккорд в палитру")}
                     onClick={() => {
                       setTarget(null);
                       setCreator(true);
@@ -1151,18 +1260,18 @@ export default function App() {
                     setReplace(true);
                   }}
                 >
-                  Заменить все…
+                  {t("Заменить все…")}
                 </button>
                 <span className="toolbar-divider" />
                 <IconButton
-                  title="Отменить"
+                  title={t("Отменить")}
                   onClick={undo}
                   disabled={!past.length}
                 >
                   <Undo2 size={18} />
                 </IconButton>
                 <IconButton
-                  title="Повторить"
+                  title={t("Повторить")}
                   onClick={redo}
                   disabled={!future.length}
                 >
@@ -1172,9 +1281,23 @@ export default function App() {
             </div>
             {moving && (
               <div className="notice" role="status">
-                Выберите новую позицию аккорда в тексте.
-                <button onClick={() => setMoving(null)}>Отмена</button>
+                {t("Выберите новую позицию аккорда в тексте.")}
+                <button onClick={() => setMoving(null)}>{t("Отмена")}</button>
               </div>
+            )}
+            {song.origin && (
+              <p className="source-credit">
+                <a href={song.origin.url} target="_blank" rel="noreferrer">
+                  {t("Открыть источник ↗")}
+                </a>
+                <span>
+                  {SOURCE_NAMES[song.origin.site] || song.origin.site}
+                  {song.origin.author
+                    ? t(" · Подбор: {value0}", { value0: song.origin.author })
+                    : ""}
+                  {song.origin.variant ? ` · ${song.origin.variant}` : ""}
+                </span>
+              </p>
             )}
             <div className="editor-layout">
               <div className="document">
@@ -1185,7 +1308,7 @@ export default function App() {
                         {String(sectionIndex + 1).padStart(2, "0")}
                       </span>
                       <input
-                        aria-label="Название раздела"
+                        aria-label={t("Название раздела")}
                         value={section.name}
                         maxLength={100}
                         onChange={(e) =>
@@ -1196,11 +1319,13 @@ export default function App() {
                         }
                       />
                       <IconButton
-                        title="Удалить раздел"
+                        title={t("Удалить раздел")}
                         onClick={() => {
                           if (
                             confirm(
-                              "Удалить раздел вместе со строками? Это можно отменить.",
+                              t(
+                                "Удалить раздел вместе со строками? Это можно отменить.",
+                              ),
                             )
                           )
                             mutate((d) => {
@@ -1226,7 +1351,9 @@ export default function App() {
                           {line.start !== undefined && (
                             <small
                               className="line-timestamp"
-                              title="Приблизительное начало в исходной записи"
+                              title={t(
+                                "Приблизительное начало в исходной записи",
+                              )}
                             >
                               {Math.floor(line.start / 60)}:
                               {String(Math.floor(line.start % 60)).padStart(
@@ -1245,7 +1372,7 @@ export default function App() {
                           {editing === line.id && (
                             <textarea
                               autoFocus
-                              aria-label="Текст строки"
+                              aria-label={t("Текст строки")}
                               value={line.text}
                               rows={Math.max(
                                 2,
@@ -1296,15 +1423,17 @@ export default function App() {
                             >
                               {line.source === "model" &&
                               line.start !== undefined
-                                ? "Аккорд не определён"
-                                : "Пустая строка"}
+                                ? t("Аккорд не определён")
+                                : t("Пустая строка")}
                             </button>
                           )}
                         </div>
                         <div className="line-actions">
                           <IconButton
                             title={
-                              editing === line.id ? "Готово" : "Изменить текст"
+                              editing === line.id
+                                ? t("Готово")
+                                : t("Изменить текст")
                             }
                             onClick={() =>
                               setEditing(editing === line.id ? null : line.id)
@@ -1317,7 +1446,7 @@ export default function App() {
                             )}
                           </IconButton>
                           <IconButton
-                            title="Удалить строку"
+                            title={t("Удалить строку")}
                             onClick={() =>
                               mutate((d) => {
                                 const s = d.sections.find(
@@ -1347,7 +1476,7 @@ export default function App() {
                       }}
                     >
                       <Plus size={15} />
-                      Строка
+                      {t("Строка")}
                     </button>
                   </section>
                 ))}
@@ -1364,11 +1493,19 @@ export default function App() {
                   }
                 >
                   <Plus size={17} />
-                  Добавить раздел
+                  {t("Добавить раздел")}
                 </button>
               </div>
               <aside className="audio-panel">
-                <p className="overline">Исходная запись</p>
+                <SongStatus song={song} />
+                <button
+                  className="sync-song-button"
+                  onClick={() => setSyncSearch(true)}
+                >
+                  <Search size={16} />
+                  {t("Найти синхронизацию")}
+                </button>
+                <p className="overline">{t("Исходная запись")}</p>
                 {song.audio ? (
                   <>
                     <div className="audio-title">
@@ -1381,49 +1518,54 @@ export default function App() {
                       onClick={() => audioInput.current?.click()}
                     >
                       <Upload size={15} />
-                      Заменить MP3
+                      {t("Заменить MP3")}
                     </button>
                   </>
                 ) : (
                   <>
                     <div className="audio-empty">
                       <Music2 size={26} />
-                      <span>Запись не добавлена</span>
+                      <span>{t("Запись не добавлена")}</span>
                     </div>
                     <button onClick={() => audioInput.current?.click()}>
                       <Upload size={16} />
-                      Добавить MP3
+                      {t("Добавить MP3")}
                     </button>
                   </>
                 )}
-                <AnalysisPanel
-                  song={song}
-                  beforeStart={async () => {
-                    clearTimeout(timers.current[song.id]);
-                    if (!(await save(song)))
-                      throw new Error(
-                        "Сначала сохраните песню. Анализ не запущен.",
-                      );
-                  }}
-                  onResult={(result) => {
-                    setSongs((s) => [result, ...s]);
-                    open(result.id);
-                  }}
-                />
-                <div className="panel-note">Текст и аккорды</div>
+                <details className="optional-analysis">
+                  <DisclosureSummary className="analysis-disclosure">
+                    {t("Дополнительный анализ аудио")}
+                  </DisclosureSummary>
+                  <AnalysisPanel
+                    song={song}
+                    beforeStart={async () => {
+                      clearTimeout(timers.current[song.id]);
+                      if (!(await save(song)))
+                        throw new Error(
+                          "Сначала сохраните песню. Анализ не запущен.",
+                        );
+                    }}
+                    onResult={(result) => {
+                      setSongs((s) => [result, ...s]);
+                      open(result.id);
+                    }}
+                  />
+                </details>
+                <div className="panel-note">{t("Текст и аккорды")}</div>
                 <dl>
                   <div>
-                    <dt>Разделов</dt>
+                    <dt>{t("Разделов")}</dt>
                     <dd>{song.sections.length}</dd>
                   </div>
                   <div>
-                    <dt>Строк</dt>
+                    <dt>{t("Строк")}</dt>
                     <dd>
                       {song.sections.reduce((n, s) => n + s.lines.length, 0)}
                     </dd>
                   </div>
                   <div>
-                    <dt>Аккордов</dt>
+                    <dt>{t("Аккордов")}</dt>
                     <dd>
                       {song.sections
                         .flatMap((s) => s.lines)
@@ -1436,76 +1578,108 @@ export default function App() {
           </>
         )}
         {view === "performance" && song && (
-          <Performance
-            song={song}
-            onSong={update}
-            saveStatus={states[song.id] || "Сохранено"}
-            onBack={() => setView("editor")}
-            onSettings={(settings) =>
-              mutate((d) => {
-                d.performance = settings;
-              })
-            }
-          />
+          <Suspense fallback={<p role="status">{t("Загрузка…")}</p>}>
+            <Performance
+              song={song}
+              onSong={update}
+              saveStatus={states[song.id] || "Сохранено"}
+              onBack={() => setView("editor")}
+              onSettings={(settings) =>
+                mutate((d) => {
+                  d.performance = settings;
+                })
+              }
+            />
+          </Suspense>
         )}
         {view === "settings" && (
           <div className="settings-page">
-            <p className="overline">На этом компьютере</p>
-            <h1>Настройки</h1>
+            <p className="overline">{t("На этом компьютере")}</p>
+            <h1>{t("Настройки")}</h1>
             <section>
-              <h2>Локальные данные</h2>
+              <h2>{t("Язык интерфейса")}</h2>
+              <label>
+                {t("Язык интерфейса")}
+                <select
+                  value={locale}
+                  onChange={(event) =>
+                    setLocale(event.target.value as "ru" | "en")
+                  }
+                >
+                  <option value="ru">Русский</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
+            </section>
+            <section>
+              <h2>{t("Локальные данные")}</h2>
               <p className="muted">
-                Песни и аудио хранятся на этом компьютере. Каталог меняется
-                перед запуском через VLAD_DATA_DIR.
+                {t(
+                  "Песни и аудио хранятся на этом компьютере. Каталог меняется перед запуском через VLAD_DATA_DIR.",
+                )}
               </p>
               <code>
                 {health
                   ? String(health.dataDir || health.data_dir || "data/")
-                  : "Загрузка…"}
+                  : t("Загрузка…")}
               </code>
             </section>
             <section>
-              <h2>Аудио и модели</h2>
-              <p>Редактор и плеер работают без моделей.</p>
+              <h2>{t("Аудио и модели")}</h2>
+              <p>{t("Редактор и плеер работают без моделей.")}</p>
               <p className="muted">
-                Следование за голосом использует отдельную модель Vosk в режиме
-                исполнения. Экспериментальная транскрипция доступна после
-                отдельной установки Whisper tiny. Модели при запуске не
-                скачиваются.
+                {t(
+                  "Разметка строк под запись и импорт LRC не требуют моделей. Распознавание Whisper оставлено как необязательный инструмент. Разделение вокала и сопровождения устанавливается отдельно; его состояние показано в плеере. Модели при запуске не скачиваются.",
+                )}
               </p>
-              <p>
-                Whisper tiny:{" "}
-                {health
-                  ? health.modelInstalled
-                    ? "модель установлена"
-                    : "модель не установлена"
-                  : "проверка…"}
-              </p>
-              <p>
-                Обработчик текста:{" "}
-                {health
-                  ? health.providerAvailable
-                    ? "установлен"
-                    : "не установлен"
-                  : "проверка…"}
-              </p>
-              <p>
-                FFmpeg:{" "}
-                {health
-                  ? String(health.ffmpeg ? "доступен" : "не найден")
-                  : "проверка…"}
-              </p>
+              <details>
+                <DisclosureSummary>{t("Подробности")}</DisclosureSummary>
+                <p>
+                  Whisper tiny:{" "}
+                  {health
+                    ? health.modelInstalled
+                      ? t("модель установлена")
+                      : t("модель не установлена")
+                    : t("проверка…")}
+                </p>
+                <p>
+                  {t("Обработчик текста:")}{" "}
+                  {health
+                    ? health.providerAvailable
+                      ? t("установлен")
+                      : t("не установлен")
+                    : t("проверка…")}
+                </p>
+                <p>
+                  FFmpeg:{" "}
+                  {health
+                    ? String(health.ffmpeg ? t("доступен") : t("не найден"))
+                    : t("проверка…")}
+                </p>
+              </details>
             </section>
             <section>
-              <h2>Оформление</h2>
+              <h2>{t("Оформление")}</h2>
               <p>
-                Тёмная тема. Размер текста исполнения сохраняется отдельно для
-                каждой песни.
+                {t(
+                  "Тёмная тема. Размер текста исполнения сохраняется отдельно для каждой песни.",
+                )}
               </p>
             </section>
           </div>
         )}
+        {view !== "performance" && <PolicyFooter />}
       </main>
+      {syncSearch && song && (
+        <Suspense fallback={<p role="status">{t("Загрузка…")}</p>}>
+          <LrclibDialog
+            key={song.id}
+            song={song}
+            onApply={update}
+            onClose={() => setSyncSearch(false)}
+          />
+        </Suspense>
+      )}
       {target && song && !creator && (
         <ChordPopover
           target={target}
@@ -1536,10 +1710,13 @@ export default function App() {
         />
       )}
       {replace && song && (
-        <Modal title="Заменить все вхождения" onClose={() => setReplace(false)}>
+        <Modal
+          title={t("Заменить все вхождения")}
+          onClose={() => setReplace(false)}
+        >
           <div className="replacement">
             <label>
-              Аккорд
+              {t("Аккорд")}
               <select value={from} onChange={(e) => setFrom(e.target.value)}>
                 {song.palette.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -1550,7 +1727,7 @@ export default function App() {
             </label>
             <MoveRight size={20} />
             <label>
-              Заменить на
+              {t("Заменить на")}
               <select value={to} onChange={(e) => setTo(e.target.value)}>
                 {song.palette.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -1561,7 +1738,8 @@ export default function App() {
             </label>
           </div>
           <p>
-            Будет заменено вхождений: <strong>{replacementCount}</strong>
+            {t("Будет заменено вхождений: ")}
+            <strong>{replacementCount}</strong>
           </p>
           <button
             className="primary"
@@ -1580,15 +1758,17 @@ export default function App() {
             }}
           >
             <Check size={17} />
-            Подтвердить замену
+            {t("Подтвердить замену")}
           </button>
         </Modal>
       )}
       {deleteId && (
-        <Modal title="Удалить песню?" onClose={() => setDeleteId(null)}>
+        <Modal title={t("Удалить песню?")} onClose={() => setDeleteId(null)}>
           <p>
-            «{songs.find((s) => s.id === deleteId)?.title}» и её локальная
-            аудиозапись будут удалены. Это действие нельзя отменить.
+            «{songs.find((s) => s.id === deleteId)?.title}
+            {t(
+              "» и её локальная аудиозапись будут удалены. Это действие нельзя отменить.",
+            )}
           </p>
           <button
             className="destructive"
@@ -1599,6 +1779,7 @@ export default function App() {
                 await queue.current;
                 await api("/songs/" + deleting, { method: "DELETE" });
                 localStorage.removeItem("vlad-draft-" + deleting);
+                localStorage.removeItem("vlad-timing-draft-" + deleting);
                 setSongs((ss) => ss.filter((s) => s.id !== deleting));
                 setStates((ss) => {
                   const next = { ...ss };
@@ -1613,10 +1794,18 @@ export default function App() {
             }}
           >
             <Trash2 size={17} />
-            Удалить песню
+            {t("Удалить песню")}
           </button>
         </Modal>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
   );
 }

@@ -16,4 +16,10 @@ __pycache__/
 test-results/
 backend/.deps/
 .tmp/
+backups/
+.audio-engine/
+.separation-venv/
+*.flac
 *.part
+
+.venv-separation/

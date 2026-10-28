@@ -39,7 +39,7 @@ def run(path):
               'preparationTranscript':' '.join(w['word'] for w in words),
               'wordTimedLines':len(timed),'lineOnlyLines':sum('start' in l and not l.get('words') for l in song['sections'][0]['lines']), 'unmappedLines':sum(l.get('timingReview',False) for l in song['sections'][0]['lines']),'chunks':[]}
     assert timed, report
-    with tempfile.TemporaryDirectory() as directory, TestClient(create_app(directory)) as client:
+    with tempfile.TemporaryDirectory() as directory, TestClient(create_app(directory, legacy_follow=True)) as client:
         created = client.post('/api/songs',json=song); assert created.status_code==201,created.text
         session=client.post('/api/follow/sessions',json={'songId':song['id'],'lineId':timed[0]['id'],'language':'ru','streaming':True})
         assert session.status_code==201,session.text

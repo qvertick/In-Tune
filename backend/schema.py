@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 from typing import Annotated, Literal
 from uuid import UUID
+from urllib.parse import urlsplit
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
@@ -74,6 +75,18 @@ class Word(StrictModel):
         return self
 
 
+class WordStart(StrictModel):
+    text: Annotated[str, Field(max_length=10000)]
+    start: Nonnegative
+    end: Nonnegative | None = None
+
+    @model_validator(mode="after")
+    def ordered_times(self):
+        if self.end is not None and self.end < self.start:
+            raise ValueError("Конец слова не может предшествовать началу")
+        return self
+
+
 class Line(StrictModel):
     id: Identifier
     text: Annotated[str, Field(max_length=10000)]
@@ -82,6 +95,7 @@ class Line(StrictModel):
     end: Nonnegative | None = None
     timingReview: bool | None = None
     words: Annotated[list[Word], Field(max_length=2000)] | None = None
+    wordStarts: Annotated[list[WordStart], Field(max_length=2000)] | None = None
     source: Literal["manual", "model"] | None = None
     manuallyEdited: bool | None = None
 
@@ -110,6 +124,22 @@ class Audio(StrictModel):
     duration: Nonnegative | None = None
 
 
+class Origin(StrictModel):
+    site: Annotated[str, Field(min_length=1, max_length=80)]
+    url: Annotated[str, Field(min_length=1, max_length=2048)]
+    author: Annotated[str, Field(max_length=300)] | None = None
+    variant: Annotated[str, Field(max_length=300)] | None = None
+
+    @model_validator(mode="after")
+    def web_link(self):
+        parsed = urlsplit(self.url)
+        if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError('Источник должен быть обычной ссылкой HTTP/HTTPS без пароля')
+        if any(ord(c) < 32 for c in self.url):
+            raise ValueError('В ссылке источника недопустимы управляющие символы')
+        return self
+
+
 class Song(StrictModel):
     schemaVersion: Literal[1]
     id: Identifier
@@ -122,6 +152,7 @@ class Song(StrictModel):
     audio: Audio | None
     updatedAt: Annotated[str, Field(max_length=64)]
     source: Literal["manual", "model"]
+    origin: Origin | None = None
 
     @model_validator(mode="after")
     def document_integrity(self):

@@ -33,7 +33,7 @@ def benchmark(path, live_url=None):
             'updatedAt':'2026-10-25T12:00:00Z','source':'manual'}
     rows = song['sections'][0]['lines']
     measurements, seen = [], []
-    with tempfile.TemporaryDirectory(prefix='follow-benchmark-') as directory, (httpx.Client(base_url=live_url,timeout=30) if live_url else TestClient(create_app(directory))) as client, ExitStack() as cleanup:
+    with tempfile.TemporaryDirectory(prefix='follow-benchmark-') as directory, (httpx.Client(base_url=live_url,timeout=30) if live_url else TestClient(create_app(directory, legacy_follow=True))) as client, ExitStack() as cleanup:
         assert client.post('/api/songs', json=song).status_code == 201
         cleanup.callback(client.delete,'/api/songs/'+song['id'])
         started = client.post('/api/follow/sessions',json={'songId':song['id'],'language':'ru','lineId':rows[0]['id']})

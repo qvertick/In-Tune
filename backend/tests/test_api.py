@@ -48,11 +48,24 @@ def create(client, song):
     return f'/api/songs/{song["id"]}'
 
 
+def test_source_word_starts_round_trip_without_invented_ends(client, song):
+    line = song['sections'][0]['lines'][0]
+    line['wordStarts'] = [{'text': 'Привіт', 'start': 0.2}, {'text': '🌍', 'start': 1.0, 'end': 1.5}]
+    url = create(client, song)
+    result = client.get(url).json()['sections'][0]['lines'][0]
+    assert result['wordStarts'] == line['wordStarts']
+    assert 'end' not in result['wordStarts'][0]
+    assert result['chords'] == line['chords']
+    line['wordStarts'][0]['end'] = 0.1
+    assert client.put(url, json=song).status_code == 422
+
+
 def test_crud_export_import(client, song):
     health = client.get("/api/health").json()
     assert health["status"] == "ok"
     assert health["schemaVersion"] == 1
-    assert health["transcription"] == "uninstalled"
+    expected = "uninstalled" if not health["providerAvailable"] else "installed" if health["modelInstalled"] else "missing_model"
+    assert health["transcription"] == expected
     assert health["dataDir"] == str(client.app.state.store.root)
     assert type(health["ffmpeg"]) is bool
     assert client.get("/api/songs").json() == []

@@ -1,0 +1,367 @@
+Close
+Choose a chord
+Replace chord
+Add chord
+Another chord…
+Move…
+Delete here
+New chord
+Name
+F♯m or D/F♯
+Root
+Accidental
+None
+Type
+Bass
+Will add {normalized}
+Use A–G, ♯/♭, a type from the list, and an optional A–G bass note.
+Enter a name or build a chord.
+Add
+Instrumental line
+Chord {value0}, position {value1}
+Place chord: {value0}, position {value1}
+end of line
+Local app
+Library
+Open song
+Settings
+ On this computer
+Your music stays with you.
+Dismiss message
+Your space
+Songs you want to return to.
+Upload MP3
+Import JSON
+New song
+Search songs
+Song title or artist
+ songs
+Where to search
+My library
+Find chords
+Opening library…
+Start with your own song
+Create a song, add lyrics, and place chords.
+You can transfer a song document via JSON.
+Create song
+Open original example
+Untitled
+No artist specified
+RU
+UK
+With audio
+Lyrics and chords
+Imported chords
+Analysis draft
+Manually edited
+Has timing
+No timing
+Rename
+Delete {value0}
+No songs found.
+Local library
+JSON preserves lyrics, chords, and timing. Audio and stems are transferred separately.
+Save failed
+Saved
+Save now
+Export JSON without MP3
+Open player
+Song editor
+Song title
+Artist
+Song language
+Russian
+Ukrainian
+Song chords
+Add chord to palette
+Replace all…
+Undo
+Redo
+Choose the new chord position in the lyrics.
+Cancel
+Open source ↗
+ · Chords by: {value0}
+Section name
+Delete section
+Approximate start in the original recording
+Line text
+Chord not detected
+Empty line
+Done
+Edit lyrics
+Delete line
+Line
+Add section
+Original recording
+Replace MP3
+No recording added
+Add MP3
+Additional audio analysis
+Sections
+Lines
+Chords
+On this computer
+Local data
+Songs and audio are stored on this computer. Change the directory before starting via VLAD_DATA_DIR.
+Loading…
+Audio and models
+The editor and player work without models.
+Marking lines against a recording and importing LRC do not require models. Whisper recognition is an optional tool. Vocal and accompaniment separation is installed separately; its status appears in the player. Models are not downloaded at startup.
+model installed
+model not installed
+checking…
+Text processor:
+installed
+not installed
+available
+not found
+Appearance
+Dark theme. Performance text size is saved separately for each song.
+Replace all occurrences
+Chord
+Replace with
+Occurrences to replace: 
+Confirm replacement
+Delete song?
+” and its local audio recording will be deleted. This action cannot be undone.
+Delete song
+Saving
+Changes remain in your browser.
+Changes remain in your browser. 
+The document exceeds the limit: 200 sections, 200 palette chords, 2,000 lines, 20,000 occurrences, and 2 MB of JSON.
+Unsaved changes
+The recovery draft does not fit in browser storage. Keep this tab open until you save.
+Draft recovered
+Could not open the library. 
+Song
+JSON must be smaller than 2 MB.
+Could not import the song. 
+MP3 must be smaller than 50 MiB.
+Could not save the recovery draft in your browser.
+Could not upload the MP3. 
+Delete the section and its lines? You can undo this.
+A line can contain up to 10,000 characters.
+A section can contain up to 2,000 lines.
+Verse
+Save the song first. Analysis was not started.
+Ready-made lyrics and chords
+Enter a title or artist in the search above. You can also paste a direct link.
+Search again
+Find chord sheets
+Chord sheet link
+Preview link
+Preparing preview…
+Search
+Search unavailable
+Import via link
+Import unavailable
+Searching…
+{value0} results
+Open search on website 
+Results are coming in…
+Variants found: {value0}
+No matching results received. Check the source messages or paste a direct link.
+Recommended
+Preview
+Paste lyrics and chords manually
+Copy only the chord sheet. Chords above lyrics and [Am]inline chords are supported. Spaces above the lyrics set chord positions.
+Lyrics with chords
+[Verse]\nAm         E\nYour lyrics here
+Check import
+Close preview
+ · Open source
+Chords by: 
+This source is already in your library.
+Open existing song
+Audio is attached separately.
+Adding…
+Create separate copy
+Add to library
+Chord sheet
+Imported
+Your own lyrics
+Audio
+Attached
+Add an MP3
+Synchronization
+{timed} of {value1} lines
+Needs timing or LRC
+Vocals / accompaniment
+Ready
+Add a recording first
+Not prepared
+Status unavailable · open the player
+Checking…
+Manual timing
+Listen and mark the start of each line
+Play to mark timing
+Selected line 
+ of 
+Mark start → 
+The mark uses the current audio position, then selects the next line. Finish the last line with “Mark end”.
+Previous line
+Skip line
+Undo mark
+Mark end
+Selected line starts at:
+not marked
+· needs review
+To record marks, attach an MP3 in the editor and select an audio mode.
+Overall shift, seconds
+Shift all timing
+Draft from audio
+Prepare
+Lyrics · Whisper tiny
+Chords · experimental
+Start analysis
+Finishing the current segment…
+Cancel analysis
+Open separate copy
+Local Vosk aligns known lyrics with actual recognized word times. Gaps require manual review. The result is a separate copy; the original song is preserved.
+Simple major/minor chords only. Uncertain intervals remain without chords. This is not a finished guitar arrangement.
+The Whisper tiny model must be installed. Timestamps are approximate.
+Queued
+Preparing draft
+Draft ready
+Preparation failed
+Cancelled
+Decoding audio
+Transcribing lyrics
+Analyzing harmony
+Saving draft
+From player
+Review timing for the selected line
+Times are in seconds of the original recording. Adjust the selected line boundaries or individual words. Uniform timing is not generated.
+Review timing after lyrics changes or incomplete recognition.
+Playback and marks use the shared player.
+Attach the original MP3 in the editor to listen.
+Line start
+Line end
+Listen to line
+Word timestamps
+Word {value0} start
+Word {value0} end
+Listen
+Save line timing
+Could not play the original recording.
+Enter the line start and end in seconds; the end must be after the start.
+The interval overlaps an adjacent line. Check the times of both lines.
+Set intervals for every word within the line, in order and without overlaps. Or turn off word timestamps.
+Vocals and accompaniment
+· ready
+· preparing
+· prepare
+Tracks are streamed. The player corrects noticeable drift; synchronization is not sample-accurate.
+Vocals
+Accompaniment
+Volume: {label}
+Mute: 
+Tracks are not prepared yet. Separation runs locally as a separate job.
+Engine installed.
+Install the separation engine.
+Model ready.
+Model required.
+Installation command for the terminal:
+Separating
+Job completed
+Separation failed
+Preparing audio
+Separating tracks
+Saving tracks
+Waiting
+· cancellation requested
+Prepare tracks
+Cancel separation
+Check readiness
+Separation service unavailable: 
+. Check the server and try again.
+Import timing from LRC
+Matches use lyrics and order, including repeated choruses. Song lyrics and chord positions are preserved. Unmatched lines are skipped.
+LRC file
+LRC text
+[00:12.50]First line
+Matched: 
+. Unmatched song lines:
+Time
+Song line
+Apply timing to existing lines
+Overlaps with saved timestamps will be marked for review.
+Choose an LRC smaller than 1 MB.
+Could not read the LRC.
+Back to editor
+Performance · player
+Show panels
+Clean screen
+Fullscreen
+Playback mode
+Original
+Custom mix
+Lyrics only
+Section
+Performance settings
+Text size · 
+Text size
+Speed
+Pitch is preserved by the browser.
+Volume
+A–B loop
+Loop 
+on
+off
+Set A and B at the current position. B must be after A.
+Close timing tools
+Mark manually / LRC
+Save timing map
+Unsaved timestamps
+Timing map saved
+Saving is unavailable in this mode.
+Lyrics and timing
+No timing map yet
+Select lines manually. Mark timestamps while listening, or import LRC.
+Mark manually
+Partial map: only reviewed intervals are highlighted.
+Lyrics only ·
+separate clock using the saved timing map
+manual navigation is available without a timing map
+Timing adjustments use seconds. Use the shared player to listen so the position stays consistent.
+Song lyrics
+Playback controls
+Pause
+Play
+Back to start
+Playback time
+Loading audio…
+Playing
+↑ Line
+↓ Line
+Playback position
+An unsaved timing map was recovered. Review and save it.
+Could not save the recovery map in your browser. Click “Save timing map” before closing the page.
+Fullscreen is unavailable in this browser.
+Could not enter fullscreen.
+Invalid timestamp.
+Select a line.
+The timestamp breaks the line order. Seek or adjust adjacent timestamps.
+The end must be after the line start.
+The end overlaps the next line.
+Enter the shift in seconds.
+The shift moves timestamps before the recording starts.
+Line {value0}: no standard timestamp.
+Line {value0}: time is out of range after offset.
+File too large: import it in parts.
+Lyrics did not match in order; skipped.
+Several lines have the same time; correct the LRC.
+Listening
+Recognizing
+Following
+Locating position
+No voice detected
+Microphone processing error.
+Microphone processing stopped. Turn voice following on again.
+Audio track unavailable. Select the original or prepare tracks.
+Could not start audio. Check the file and click “Play” again.
+The track did not start. Try playing again.
+One track ended before the other. The mix stopped; select the original or prepare tracks again.
+Could not load the audio track. Check the file or return to the original.
+Invalid value
+Server responded with {value0}

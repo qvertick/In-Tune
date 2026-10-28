@@ -1,3 +1,4 @@
+import { useI18n, translateError } from "./i18n";
 import { useEffect, useState } from "react";
 import { AudioLines, X, FilePlus2, LoaderCircle } from "lucide-react";
 import { api } from "./api";
@@ -34,6 +35,7 @@ export default function AnalysisPanel({
   beforeStart: () => Promise<void>;
   onResult: (song: Song) => void;
 }) {
+  const { t, locale } = useI18n();
   const [job, setJob] = useState<Job | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -104,19 +106,16 @@ export default function AnalysisPanel({
   }
   return (
     <div className="analysis-panel">
-      <p className="overline">Черновик из аудио</p>
+      <p className="overline">{t("Черновик из аудио")}</p>
       <label className="analysis-kind">
-        Подготовить
+        {t("Подготовить")}
         <select
           value={kind}
           disabled={active || busy}
           onChange={(e) => setKind(e.target.value)}
         >
-          <option value="transcription">Текст · Whisper tiny</option>
-          <option value="timing">
-            Временная карта известного текста · Vosk
-          </option>
-          <option value="chords">Аккорды · эксперимент</option>
+          <option value="transcription">{t("Текст · Whisper tiny")}</option>
+          <option value="chords">{t("Аккорды · эксперимент")}</option>
         </select>
       </label>
       <button
@@ -124,22 +123,22 @@ export default function AnalysisPanel({
         onClick={() => void start()}
       >
         <AudioLines size={16} />
-        Начать анализ
+        {t("Начать анализ")}
       </button>
       {job && (
         <div role="status" className="analysis-status">
           <span>
             {active && <LoaderCircle size={13} />}{" "}
             {job.cancelRequested && active
-              ? "Завершаю текущий фрагмент…"
+              ? t("Завершаю текущий фрагмент…")
               : active
-                ? stages[job.stage || ""] || labels[job.status]
-                : labels[job.status]}
+                ? t(stages[job.stage || ""] || labels[job.status])
+                : t(labels[job.status])}
           </span>
           {active && (
             <button
-              title="Отменить анализ"
-              aria-label="Отменить анализ"
+              title={t("Отменить анализ")}
+              aria-label={t("Отменить анализ")}
               className="icon-button"
               disabled={job.cancelRequested}
               onClick={() => void cancel()}
@@ -151,26 +150,32 @@ export default function AnalysisPanel({
       )}
       {job?.error && (
         <p className="analysis-error" role="alert">
-          {job.error}
+          {translateError(locale, job.error)}
         </p>
       )}
       {error && (
         <p className="analysis-error" role="alert">
-          {error}
+          {translateError(locale, error)}
         </p>
       )}
       {job?.resultAvailable && (
         <button disabled={busy} onClick={() => void importResult()}>
           <FilePlus2 size={16} />
-          Открыть отдельную копию
+          {t("Открыть отдельную копию")}
         </button>
       )}
       <p className="muted">
         {kind === "timing"
-          ? "Локальный Vosk сопоставляет известный текст с реальными временами распознанных слов. Пропуски требуют ручной проверки. Результат — отдельная копия; исходная песня сохраняется."
+          ? t(
+              "Локальный Vosk сопоставляет известный текст с реальными временами распознанных слов. Пропуски требуют ручной проверки. Результат — отдельная копия; исходная песня сохраняется.",
+            )
           : kind === "chords"
-            ? "Только простые major/minor. Неопределённые интервалы остаются без аккорда. Это не готовая гитарная аранжировка."
-            : "Нужна установленная модель Whisper tiny. Отметки времени приблизительные."}
+            ? t(
+                "Только простые major/minor. Неопределённые интервалы остаются без аккорда. Это не готовая гитарная аранжировка.",
+              )
+            : t(
+                "Нужна установленная модель Whisper tiny. Отметки времени приблизительные.",
+              )}
       </p>
     </div>
   );

@@ -1,3 +1,5 @@
+import { useI18n, translateError } from "./i18n";
+import DisclosureSummary from "./DisclosureSummary";
 import { useEffect, useRef, useState } from "react";
 import type { Line, Song } from "./model";
 import { validWords } from "./timeline";
@@ -7,12 +9,18 @@ export default function TimingEditor({
   line,
   onSave,
   disabled = false,
+  transport,
 }: {
   song: Song;
   line: Line;
   onSave: (line: Line) => void;
   disabled?: boolean;
+  transport?: {
+    currentTime: () => number;
+    listen: (start: number, end?: number) => void;
+  };
 }) {
+  const { t, locale } = useI18n();
   const player = useRef<HTMLAudioElement>(null);
   const until = useRef<number | null>(null);
   const [start, setStart] = useState("");
@@ -42,6 +50,11 @@ export default function TimingEditor({
     if (disabled) player.current?.pause();
   }, [disabled]);
   function listen(from: string, to: string) {
+    if (transport) {
+      if (from !== "" && Number.isFinite(Number(from)))
+        transport.listen(Number(from), to === "" ? undefined : Number(to));
+      return;
+    }
     const p = player.current;
     if (!p || from === "" || !Number.isFinite(Number(from))) return;
     p.currentTime = Math.max(0, Number(from) - 0.5);
@@ -85,6 +98,7 @@ export default function TimingEditor({
       timingReview: false,
       manuallyEdited: true,
     };
+    delete next.wordStarts;
     if (wordMode && words.length) {
       const timed = words.map((w) => ({
         text: w.text,
@@ -129,29 +143,44 @@ export default function TimingEditor({
       {song.audio && (
         <button
           type="button"
-          onClick={() => change((player.current?.currentTime ?? 0).toFixed(2))}
+          onClick={() =>
+            change(
+              (
+                transport?.currentTime() ??
+                player.current?.currentTime ??
+                0
+              ).toFixed(2),
+            )
+          }
         >
-          Из плеера
+          {t("Из плеера")}
         </button>
       )}
     </label>
   );
   return (
     <details className="timing-editor">
-      <summary>Проверка разметки выбранной строки</summary>
-      <p>{line.text || "Инструментальная строка"}</p>
+      <DisclosureSummary>
+        {t("Проверка разметки выбранной строки")}
+      </DisclosureSummary>
+      <p>{line.text || t("Инструментальная строка")}</p>
       <p className="muted">
-        Времена в секундах оригинала. Равномерная разметка не создаётся. Для
-        подготовки из MP3: редактор → «Временная карта известного текста · Vosk»
-        → «Начать анализ» → отдельная копия.
+        {t(
+          "Времена в секундах оригинала. Исправьте границы выбранной строки или отдельные слова. Равномерная разметка не создаётся.",
+        )}
       </p>
       {line.timingReview && (
         <p className="notice">
-          Разметку нужно проверить после изменения текста или неполного
-          распознавания.
+          {t(
+            "Разметку нужно проверить после изменения текста или неполного распознавания.",
+          )}
         </p>
       )}
-      {song.audio ? (
+      {transport ? (
+        <p className="muted">
+          {t("Прослушивание и отметки используют общий плеер.")}
+        </p>
+      ) : song.audio ? (
         <audio
           ref={player}
           controls
@@ -173,15 +202,15 @@ export default function TimingEditor({
         />
       ) : (
         <p className="muted">
-          Для прослушивания прикрепите оригинальный MP3 в редакторе.
+          {t("Для прослушивания прикрепите оригинальный MP3 в редакторе.")}
         </p>
       )}
       <fieldset disabled={disabled}>
         <div className="timing-fields">
-          {timeInput("Начало строки", start, setStart)}
-          {timeInput("Конец строки", end, setEnd)}
+          {timeInput(t("Начало строки"), start, setStart)}
+          {timeInput(t("Конец строки"), end, setEnd)}
           <button disabled={!song.audio} onClick={() => listen(start, end)}>
-            Прослушать строку
+            {t("Прослушать строку")}
           </button>
         </div>
         <label>
@@ -190,35 +219,41 @@ export default function TimingEditor({
             checked={wordMode}
             onChange={(e) => setWordMode(e.target.checked)}
           />{" "}
-          Отметки каждого слова
+          {t("Отметки каждого слова")}
         </label>
         {wordMode &&
           words.map((word, i) => (
             <div key={i} className="timing-fields">
               <span>{word.text}</span>
-              {timeInput(`Начало слова ${i + 1}`, word.start, (v) =>
-                setWords((ws) =>
-                  ws.map((w, j) => (j === i ? { ...w, start: v } : w)),
-                ),
+              {timeInput(
+                t("Начало слова {value0}", { value0: i + 1 }),
+                word.start,
+                (v) =>
+                  setWords((ws) =>
+                    ws.map((w, j) => (j === i ? { ...w, start: v } : w)),
+                  ),
               )}
-              {timeInput(`Конец слова ${i + 1}`, word.end, (v) =>
-                setWords((ws) =>
-                  ws.map((w, j) => (j === i ? { ...w, end: v } : w)),
-                ),
+              {timeInput(
+                t("Конец слова {value0}", { value0: i + 1 }),
+                word.end,
+                (v) =>
+                  setWords((ws) =>
+                    ws.map((w, j) => (j === i ? { ...w, end: v } : w)),
+                  ),
               )}
               <button
                 disabled={!song.audio}
                 onClick={() => listen(word.start, word.end)}
               >
-                Слушать
+                {t("Слушать")}
               </button>
             </div>
           ))}
-        <button onClick={save}>Сохранить разметку строки</button>
+        <button onClick={save}>{t("Сохранить разметку строки")}</button>
       </fieldset>
       {error && (
         <p className="error" role="alert">
-          {error}
+          {translateError(locale, error)}
         </p>
       )}
     </details>

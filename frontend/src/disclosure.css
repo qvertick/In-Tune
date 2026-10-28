@@ -1,0 +1,89 @@
+.disclosure-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 0;
+  list-style: none;
+  cursor: pointer;
+  border-radius: 5px;
+  -webkit-tap-highlight-color: transparent;
+}
+.disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+.disclosure-summary::marker {
+  content: "";
+}
+.disclosure-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.disclosure-indicator {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border, #3a3b36);
+  border-radius: 7px;
+  color: var(--muted, #a0a39a);
+  background: var(--surface);
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.disclosure-indicator svg {
+  display: block;
+  transition: transform 160ms ease;
+}
+.disclosure-summary:hover .disclosure-indicator,
+.disclosure-summary:focus-visible .disclosure-indicator {
+  color: var(--accent, #b4c99b);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+details[open] > .disclosure-summary > .disclosure-indicator {
+  color: var(--accent, #b4c99b);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+details[open] > .disclosure-summary > .disclosure-indicator svg {
+  transform: rotate(90deg);
+}
+.disclosure-summary:focus-visible {
+  outline: 2px solid var(--accent, #b4c99b);
+  outline-offset: 4px;
+}
+.analysis-disclosure .disclosure-indicator {
+  flex-basis: 24px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border-color: transparent;
+}
+.analysis-disclosure .disclosure-indicator svg {
+  stroke-width: 1.6;
+}
+.analysis-disclosure:hover .disclosure-indicator,
+.analysis-disclosure:focus-visible .disclosure-indicator {
+  background: var(--accent-soft);
+  border-color: var(--border, #3a3b36);
+}
+details[open] > .analysis-disclosure > .disclosure-indicator {
+  background: transparent;
+  border-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .disclosure-indicator,
+  .disclosure-indicator svg {
+    transition: none;
+  }
+}

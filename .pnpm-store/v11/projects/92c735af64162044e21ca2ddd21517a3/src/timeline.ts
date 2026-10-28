@@ -22,6 +22,28 @@ export function validWords(line: Line) {
     )
   );
 }
+export function validWordStarts(line: Line) {
+  const tokens = line.text.match(/\S+/gu) ?? [];
+  return (
+    !line.timingReview &&
+    !!line.wordStarts?.length &&
+    tokens.length === line.wordStarts.length &&
+    line.wordStarts.every(
+      (word, i, all) =>
+        normalized(word.text) === normalized(tokens[i]) &&
+        Number.isFinite(word.start) &&
+        word.start >= (line.start ?? 0) &&
+        word.start < (line.end ?? Infinity) &&
+        (word.end === undefined ||
+          (Number.isFinite(word.end) &&
+            word.end > word.start &&
+            word.end <= (line.end ?? Infinity))) &&
+        (i === 0 ||
+          (word.start > all[i - 1].start &&
+            word.start >= (all[i - 1].end ?? all[i - 1].start))),
+    )
+  );
+}
 export type TimedLine = {
   line: Line;
   start: number;

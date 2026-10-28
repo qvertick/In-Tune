@@ -2,10 +2,12 @@
 import json
 import logging
 import sqlite3
+import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
 from .schema import Song
+from .migrations import migrate_storage
 
 
 class Store:
@@ -17,6 +19,7 @@ class Store:
         with self.connect() as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("CREATE TABLE IF NOT EXISTS songs (id TEXT PRIMARY KEY, document TEXT NOT NULL, audio_file TEXT)")
+            migrate_storage(db)
 
     @contextmanager
     def connect(self):
@@ -63,6 +66,17 @@ class Store:
                 return False
             db.execute("DELETE FROM songs WHERE id = ?", (identifier,))
         self.unlink(old[0])
+        # UUIDs are validated by the API; still verify the resolved boundary
+        # before removing optional generated files (never follow a symlink).
+        stems_root = self.root / 'stems'
+        stems = stems_root / identifier
+        if (stems.is_dir() and not stems.is_symlink() and
+                stems.resolve().parent == stems_root.resolve() and
+                stems_root.resolve().parent == self.root.resolve()):
+            try:
+                shutil.rmtree(stems)
+            except OSError:
+                logging.getLogger(__name__).warning('Could not remove obsolete stems for %s', identifier, exc_info=True)
         return True
 
     def set_audio(self, identifier: str, filename: str, metadata: dict, updated_at: str):

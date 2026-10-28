@@ -1,15 +1,33 @@
 :root {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  color: #e7e7e1;
-  background: #222321;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    Arial,
+    sans-serif;
+  color: #e9e6df;
+  background: #232422;
   font-synthesis: none;
   font-size: 14px;
   line-height: 1.5;
   color-scheme: dark;
-  --surface: #292a27;
-  --border: #3a3b36;
-  --muted: #a0a39a;
-  --accent: #b4c99b;
+  --canvas: #232422;
+  --surface: #2b2c29;
+  --surface-raised: #323430;
+  --surface-hover: #393d36;
+  --border: #42453e;
+  --border-strong: #697262;
+  --ink: #e9e6df;
+  --muted: #b0b2a8;
+  --accent: #b0c5a1;
+  --accent-hover: #c1d4b4;
+  --accent-soft: #303a2e;
+  --on-accent: #20271d;
+  --scrollbar-thumb: #73796b;
+  --scrollbar-track: #252623;
+  accent-color: var(--accent);
+  scrollbar-gutter: stable;
 }
 * {
   box-sizing: border-box;
@@ -17,6 +35,51 @@
 }
 body {
   margin: 0;
+}
+html {
+  min-width: 280px;
+  scroll-padding-block: 24px;
+}
+/* Native scrolling stays intact. Older Chromium uses the pseudo-element fallback. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+/* Reset supporting engines so Chromium also honors the button-free fallback. */
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+dialog {
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 20px;
 }
 button,
 input,
@@ -33,7 +96,7 @@ button {
   padding: 8px 13px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: #30312d;
+  background: var(--surface-raised);
   color: inherit;
   cursor: pointer;
   transition:
@@ -41,8 +104,8 @@ button {
     border-color 0.12s;
 }
 button:hover {
-  background: #3a3c35;
-  border-color: #666b5d;
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
 }
 button:disabled {
   opacity: 0.38;
@@ -51,23 +114,26 @@ button:disabled {
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
-select:focus-visible {
+select:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 button.primary {
   background: var(--accent);
-  color: #20251b;
+  color: var(--on-accent);
   border-color: var(--accent);
   font-weight: 600;
 }
 button.primary:hover {
-  background: #c4d8af;
+  background: var(--accent-hover);
 }
 input,
 textarea,
 select {
-  background: #242521;
+  background: var(--canvas);
   border: 1px solid var(--border);
   border-radius: 5px;
   padding: 9px 11px;
@@ -109,14 +175,17 @@ svg {
 }
 a {
   color: var(--accent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 .app {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
 }
 .sidebar {
-  background: #1d1e1c;
+  background: #1e201d;
   border-right: 1px solid var(--border);
   padding: 27px 18px;
   display: flex;
@@ -124,6 +193,8 @@ a {
   position: sticky;
   top: 0;
   height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
 }
 .brand {
   background: none;
@@ -132,7 +203,7 @@ a {
   font-weight: 600;
   justify-content: flex-start;
   padding: 0 8px;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
   gap: 12px;
 }
 .brand-mark {
@@ -165,9 +236,9 @@ a {
   padding: 11px 13px;
 }
 .sidebar nav button.active {
-  background: #30332b;
+  background: var(--accent-soft);
   color: var(--accent);
-  border-color: #3c4432;
+  border-color: #4d5c45;
 }
 .sidebar nav button span {
   margin-left: auto;
@@ -189,7 +260,7 @@ a {
 }
 main {
   min-width: 0;
-  padding: 39px 44px 24px;
+  padding: 32px 40px 24px;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
@@ -199,7 +270,7 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin: 18px 0 34px;
+  margin: 12px 0 28px;
 }
 .overline {
   text-transform: uppercase;
@@ -230,7 +301,7 @@ main {
 .search {
   flex-direction: row;
   align-items: center;
-  background: #292a27;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0 12px;
@@ -253,11 +324,14 @@ main {
   align-items: center;
   gap: 18px;
   border-bottom: 1px solid var(--border);
-  padding: 22px 3px;
+  padding: 18px 3px;
+}
+.song-row:focus-within {
+  background: var(--surface);
 }
 .song-number {
   font-size: 12px;
-  color: #74796b;
+  color: var(--muted);
   width: 24px;
 }
 .song-open {
@@ -523,6 +597,8 @@ main {
   font-size: 18px;
 }
 .lyric-cell {
+  position: relative;
+  padding-top: var(--chord-space, 26px);
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
@@ -578,12 +654,35 @@ main {
   margin-top: 12px;
 }
 .above {
-  display: flex;
-  min-height: 25px;
-  align-items: center;
-  gap: 3px;
-  flex-wrap: wrap;
-  max-width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.above > .chord {
+  position: absolute;
+  left: var(--chord-x, 0px);
+  top: var(--chord-y, 0px);
+  width: max-content;
+  max-width: var(--chord-max-width, calc(100vw - 48px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  z-index: 1;
+}
+.above > .chord[data-shifted="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: var(--chord-tether);
+  height: 3px;
+  border-bottom: 1px solid var(--accent);
+  border-right: 1px solid var(--accent);
+  opacity: 0.4;
+  pointer-events: none;
 }
 .chord {
   display: inline-flex;
@@ -617,11 +716,7 @@ main {
   background: #3d4435;
 }
 .lyric-cell:has(.chord) {
-  min-width: 27px;
-}
-.lyric-cell:has(.chord) .letter {
-  width: 100%;
-  text-align: left;
+  min-width: 0;
 }
 .editing textarea {
   margin-top: 13px;
@@ -766,9 +861,9 @@ dd {
   border-radius: 0;
 }
 dialog {
-  border: 1px solid #575e4d;
-  background: #292c25;
-  color: #e7e9df;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
   border-radius: 8px;
   padding: 25px;
   width: 440px;
@@ -816,18 +911,19 @@ dialog::backdrop {
   color: white;
 }
 .settings-page {
-  max-width: 750px;
-  padding-top: 20px;
+  max-width: 780px;
+  padding-top: 12px;
 }
 .settings-page section {
-  padding: 25px 0;
+  padding: 18px 0;
   border-top: 1px solid var(--border);
 }
 .settings-page h1 {
-  margin-bottom: 35px;
+  margin-bottom: 24px;
 }
 .settings-page h2 {
-  font-size: 17px;
+  font-size: 16px;
+  margin-bottom: 10px;
 }
 .settings-page code {
   display: block;
@@ -837,6 +933,11 @@ dialog::backdrop {
 }
 .settings-page section p {
   font-size: 13px;
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.settings-page section > :last-child {
+  margin-bottom: 0;
 }
 .performance-header,
 .performance-controls {
@@ -875,14 +976,49 @@ dialog::backdrop {
   color: var(--muted);
   font-size: 12px;
 }
-.voice-follow{padding:18px 0;margin-top:20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.voice-follow label{font-size:12px;color:var(--muted);min-width:0;max-width:100%}
-.follow-status{font-size:13px;color:var(--accent)}
-.follow-install{margin-top:15px;margin-bottom:0;display:block}
-.follow-install code{display:block;white-space:normal;overflow-wrap:anywhere;margin-top:10px;font-size:12px;user-select:all}
-.follow-diagnostics{font-size:12px;color:var(--muted);margin-top:14px;overflow-wrap:anywhere}
-.follow-diagnostics p{margin:8px 0 0}
-.performance-reader{position:relative;overscroll-behavior:contain;scroll-padding:60px 0}
+.voice-follow {
+  padding: 18px 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.voice-follow label {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 0;
+  max-width: 100%;
+}
+.follow-status {
+  font-size: 13px;
+  color: var(--accent);
+}
+.follow-install {
+  margin-top: 15px;
+  margin-bottom: 0;
+  display: block;
+}
+.follow-install code {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-top: 10px;
+  font-size: 12px;
+  user-select: all;
+}
+.follow-diagnostics {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 14px;
+  overflow-wrap: anywhere;
+}
+.follow-diagnostics p {
+  margin: 8px 0 0;
+}
+.performance-reader {
+  position: relative;
+  overscroll-behavior: contain;
+  scroll-padding: 60px 0;
+}
 .performance-controls label {
   font-size: 12px;
   color: var(--muted);
@@ -1120,7 +1256,7 @@ dialog::backdrop {
     font-size: 17px;
   }
   .lyric-cell:has(.chord) {
-    min-width: 26px;
+    min-width: 0;
   }
   .line-content {
     max-width: calc(100% - 50px);
@@ -1152,24 +1288,350 @@ dialog::backdrop {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
   }
 }
-.timeline-controls, .timing-editor { margin-block: 20px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; min-width: 0; }
-.timeline-controls .actions, .timing-fields { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
-.timeline-controls input { width: 7rem; }
-.timing-editor audio { width: 100%; margin-block: 12px; }
-.timing-editor fieldset { min-width: 0; border: 0; padding: 0; }
-.timing-fields { margin-block: 12px; }
-.timing-fields label { max-width: 11rem; }
-.timing-fields input { width: 100%; }
-.performance-line.past { opacity: .5; }
-.timed-word { background: linear-gradient(to right, var(--accent) var(--word-progress), var(--muted) var(--word-progress)); background-clip: text; -webkit-background-clip: text; }
-.timed-word .letter { color: transparent; }
-.timed-word .chord { color: var(--accent); }
-@media (prefers-reduced-motion: reduce) { .timed-word { background: none; } .timed-word .letter { color: inherit; } }
+.timeline-controls,
+.timing-editor {
+  margin-block: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 0;
+}
+.timeline-controls .actions,
+.timing-fields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.timeline-controls input {
+  width: 7rem;
+}
+.timing-editor audio {
+  width: 100%;
+  margin-block: 12px;
+}
+.timing-editor fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+.timing-fields {
+  margin-block: 12px;
+}
+.timing-fields label {
+  max-width: 11rem;
+}
+.timing-fields input {
+  width: 100%;
+}
+.performance-line.past {
+  opacity: 0.5;
+}
+.timed-word {
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--word-progress),
+    var(--muted) var(--word-progress)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.timed-word .letter {
+  color: transparent;
+}
+.timed-word .chord {
+  color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .timed-word {
+    background: none;
+  }
+  .timed-word .letter {
+    color: inherit;
+  }
+}
 
-.performance-options { margin-block: 12px; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { .timed-word.word-reached .letter { color: var(--accent); } }
+.performance-options {
+  margin-block: 12px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .timed-word.word-reached .letter {
+    color: var(--accent);
+  }
+}
+
+/* Footer belongs inside main, after the ordinary screen's content. */
+.app > main:not(:has(.music-player)) {
+  display: flex;
+  flex-direction: column;
+}
+.app > main:not(:has(.music-player)) > * {
+  flex-shrink: 0;
+}
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-top: auto;
+  padding: 20px 0 4px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.app-footer > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.app-footer p {
+  margin: 0;
+}
+.app-footer nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.app-footer button {
+  padding: 5px 0;
+  min-height: 32px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: inherit;
+  text-align: left;
+}
+.app-footer button:hover,
+.app-footer a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.app-footer a {
+  color: inherit;
+}
+.app-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+}
+.app > main:not(:has(.music-player)) > :has(+ .app-footer) {
+  margin-bottom: 24px;
+}
+/* Also accept a footer adjacent to main without spanning the sidebar. */
+.app:has(> .app-footer) {
+  grid-template-rows: 1fr auto;
+}
+.app:has(> .app-footer) > .sidebar {
+  grid-row: 1 / -1;
+}
+.app > .app-footer {
+  grid-column: 2;
+  margin: 0 40px 24px;
+}
+.app:has(.music-player.player-clean) .app-footer,
+.music-player:fullscreen .app-footer {
+  display: none;
+}
+.music-player .app-footer {
+  flex-shrink: 0;
+  padding-top: 12px;
+  margin-top: 12px;
+  gap: 8px;
+  font-size: 10px;
+}
+.song-sync-link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  padding: 0;
+  text-align: left;
+  font-size: 11px;
+  width: fit-content;
+}
+.song-sync-link:hover {
+  text-decoration: underline;
+}
+.sync-song-button {
+  width: 100%;
+  margin: 12px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.policy-dialog {
+  width: min(720px, calc(100vw - 24px));
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border-strong);
+  padding: clamp(18px, 4vw, 28px);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.policy-dialog h2 {
+  font-size: 20px;
+  line-height: 1.35;
+}
+.policy-dialog h3 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 24px 0 8px;
+}
+.policy-dialog p,
+.policy-dialog ul,
+.policy-dialog ol {
+  margin-bottom: 14px;
+}
+.policy-dialog li + li {
+  margin-top: 6px;
+}
+
+/* State painting never changes glyph, word, or chord geometry. */
+.lyric-word.timed-word.word-future,
+.music-player .lyric-word.timed-word.word-future {
+  background: none;
+}
+.lyric-word.timed-word.word-future .letter,
+.music-player .lyric-word.timed-word.word-future .letter {
+  color: inherit;
+}
+.lyric-word.timed-word.word-past,
+.music-player .lyric-word.timed-word.word-past {
+  background: none;
+}
+.lyric-word.timed-word.word-past .letter,
+.music-player .lyric-word.timed-word.word-past .letter {
+  color: var(--accent);
+}
+.lyric-word.timed-word.word-active,
+.music-player .lyric-word.timed-word.word-active {
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--word-progress, 0%),
+    currentColor var(--word-progress, 0%)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.lyric-word.timed-word.word-active .letter,
+.music-player .lyric-word.timed-word.word-active .letter {
+  color: transparent;
+}
+.approximate-word .letter,
+.letter.approximate-word {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--muted);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.sync-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-block: 12px;
+}
+.sync-choices button {
+  min-width: 0;
+  height: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.sync-choices button[aria-pressed="true"],
+.music-player .sync-choices button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 650px) {
+  .app > .app-footer {
+    margin: 0 18px 18px;
+  }
+  .app-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lyric-word.timed-word.word-active,
+  .music-player .lyric-word.timed-word.word-active {
+    background: none;
+  }
+  .lyric-word.timed-word.word-active .letter,
+  .music-player .lyric-word.timed-word.word-active .letter {
+    color: var(--accent);
+  }
+}
+@media (forced-colors: active) {
+  :root {
+    color-scheme: light dark;
+    --ink: CanvasText;
+    --muted: CanvasText;
+    --canvas: Canvas;
+    --surface: Canvas;
+    --surface-raised: ButtonFace;
+    --surface-hover: ButtonFace;
+    --accent: LinkText;
+    --accent-hover: Highlight;
+    --accent-soft: Canvas;
+    --border: ButtonBorder;
+    --border-strong: ButtonBorder;
+    --on-accent: Canvas;
+  }
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+    forced-color-adjust: auto;
+  }
+  *::-webkit-scrollbar,
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner,
+  *::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-button {
+    all: revert;
+  }
+  .timed-word,
+  .lyric-word.timed-word.word-active,
+  .music-player .timed-word,
+  .music-player .lyric-word.timed-word.word-active {
+    background: none;
+  }
+  .lyric-word.timed-word .letter,
+  .music-player .lyric-word.timed-word .letter {
+    color: CanvasText;
+  }
+  .lyric-word.timed-word.word-active .letter,
+  .music-player .lyric-word.timed-word.word-active .letter {
+    color: LinkText;
+    text-decoration: underline;
+  }
+  .music-player .player-line,
+  .music-player .player-line.is-past:not(.is-active) {
+    opacity: 1;
+  }
+  .music-player .player-line.is-active {
+    border-left-color: Highlight;
+  }
+  dialog::backdrop {
+    backdrop-filter: none;
+  }
+}

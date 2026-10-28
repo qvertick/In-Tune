@@ -1,0 +1,18 @@
+.music-player .player-main {
+  position: relative;
+}
+.player-follow-return {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 4;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--player-border);
+  border-radius: 6px;
+  background: var(--player-panel);
+  color: var(--player-accent);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}

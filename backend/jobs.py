@@ -1,7 +1,8 @@
 """SQLite FIFO with one process owner and one cooperative worker per data directory.
 
 Running work becomes failed/interrupted on restart; queued work resumes. Results
-are immutable Song drafts, never writes to Store. Run uvicorn with one worker.
+are immutable Song drafts, or separate on-disk stems for separation jobs;
+never writes to Store. Run uvicorn with one worker.
 """
 import json
 import logging
@@ -29,7 +30,8 @@ SUMMARY = "id, song_id, kind, status, stage, created_at, started_at, finished_at
 STATUS_LABELS = {"queued": "В очереди", "running": "Выполняется", "completed": "Завершено",
                  "failed": "Ошибка", "cancelled": "Отменено"}
 STAGE_LABELS = {"decoding": "Декодирование аудио", "transcribing": "Распознавание текста",
-                "harmony": "Анализ аккордов", "saving": "Сохранение черновика"}
+                "harmony": "Анализ аккордов", "saving": "Сохранение черновика",
+                "separating": "Разделение вокала и сопровождения"}
 
 
 def analyze(song, source, check):
@@ -129,6 +131,8 @@ class Jobs:
                 db.execute("""UPDATE jobs SET status = CASE WHEN cancel_requested THEN 'cancelled' ELSE 'failed' END,
                     error = CASE WHEN cancel_requested THEN NULL ELSE 'Анализ прерван перезапуском сервера. Запустите его снова.' END,
                     finished_at = ? WHERE status = 'running'""", (now(),))
+            from .separation import cleanup_interrupted
+            cleanup_interrupted(self.store)
             if autostart:
                 self.start()
         except BaseException:
@@ -180,8 +184,8 @@ class Jobs:
         return {"audio_file": row["audio_file"], "song": json.loads(row["document"])} if row else None
 
     def enqueue(self, row, kind="transcription"):
-        if kind not in ("transcription", "chords", "timing"):
-            raise AnalysisError("Неизвестный вид анализа. Допустимы transcription и chords.")
+        if kind not in ("transcription", "chords", "timing", "separation"):
+            raise AnalysisError("Неизвестный вид анализа. Допустимы transcription, chords, timing и separation.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             active = db.execute(f"SELECT {SUMMARY} FROM jobs WHERE song_id = ? AND status IN ('queued','running')", (row["id"],)).fetchone()
@@ -247,16 +251,25 @@ class Jobs:
     def _execute(self, row):
         identifier = row["id"]
         result, error, status = None, None, "completed"
+        separation_generation = None
         try:
             self._check(identifier)
-            from .timing import prepare
-            processor = self.processor or (prepare if row["kind"] == "timing" else analyze_harmony if row["kind"] == "chords" else analyze)
-            draft = processor(json.loads(row["document"]), self.store.audio / row["audio_file"],
-                              lambda stage=None: self._check(identifier, stage))
-            self._check(identifier, "saving")
-            result = Song.model_validate(draft).model_dump_json(exclude_unset=True)
-            if len(result.encode("utf-8")) > 2_000_000:
-                raise AnalysisError("Результат анализа превышает 2 000 000 байт и не сможет быть сохранён в редакторе. Сократите аудио или исходный текст и повторите анализ.")
+            if row["kind"] == "separation":
+                from .separation import separate
+                separation_generation = separate(self.store, json.loads(row["document"]), self.store.audio / row["audio_file"],
+                                                  lambda stage=None: self._check(identifier, stage))
+                self._check(identifier)
+                # No fake Song: readiness comes from the atomic stems metadata.
+                # Existing /result and /import-result keep their Song contract.
+            else:
+                from .timing import prepare
+                processor = self.processor or (prepare if row["kind"] == "timing" else analyze_harmony if row["kind"] == "chords" else analyze)
+                draft = processor(json.loads(row["document"]), self.store.audio / row["audio_file"],
+                                  lambda stage=None: self._check(identifier, stage))
+                self._check(identifier, "saving")
+                result = Song.model_validate(draft).model_dump_json(exclude_unset=True)
+                if len(result.encode("utf-8")) > 2_000_000:
+                    raise AnalysisError("Результат анализа превышает 2 000 000 байт и не сможет быть сохранён в редакторе. Сократите аудио или исходный текст и повторите анализ.")
         except Cancelled:
             status = "cancelled"
         except AnalysisError as exc:
@@ -271,6 +284,9 @@ class Jobs:
                 status, error = "cancelled", None
             db.execute("UPDATE jobs SET status = ?, error = ?, result = ?, finished_at = ? WHERE id = ?",
                        (status, error, result if status == "completed" else None, now(), identifier))
+        if separation_generation and status != "completed":
+            from .separation import discard_generation
+            discard_generation(self.store, row["song_id"], separation_generation)
 
     def _run(self):
         while not self.stop.is_set():

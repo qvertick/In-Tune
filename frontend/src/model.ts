@@ -24,6 +24,8 @@ export type Line = {
   end?: number;
   timingReview?: boolean;
   words?: { text: string; start: number; end: number }[];
+  /** Source word starts with optional source ends; no inferred ends are persisted. */
+  wordStarts?: { text: string; start: number; end?: number }[];
 };
 
 export type Section = {
@@ -44,6 +46,7 @@ export type Song = {
   audio: null | { filename: string; url: string; duration?: number };
   updatedAt: string;
   source: "manual" | "model";
+  origin?: { site: string; url: string; author?: string; variant?: string };
 };
 
 /** Unique locally, including environments without crypto.randomUUID. */
@@ -111,7 +114,13 @@ export function editLine(line: Line, newText: string): Line {
 
   const oldEnd = before.length - suffix;
   const delta = after.length - before.length;
-  const { start: _start, end: _end, words: _words, ...untimed } = line;
+  const {
+    start: _start,
+    end: _end,
+    words: _words,
+    wordStarts: _wordStarts,
+    ...untimed
+  } = line;
   return {
     ...untimed,
     text: newText,

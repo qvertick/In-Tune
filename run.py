@@ -56,6 +56,28 @@ def choose_port():
     raise SystemExit('No available port in 8000..8019')
 
 
+def ensure_dependencies():
+    """Автоматическая проверка и установка недостающих зависимостей."""
+    # 1. Проверяем uvicorn (основные зависимости)
+    if importlib.util.find_spec('uvicorn') is None:
+        req_file = ROOT / 'requirements.txt'
+        if req_file.is_file():
+            print('Обнаружено отсутствие uvicorn. Установка основных зависимостей...', flush=True)
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', str(req_file)])
+        else:
+            raise SystemExit('Install dependencies first: python -m pip install -r requirements.txt')
+
+    # 2. Проверяем аудио-зависимости (faster_whisper)
+    audio_reqs = ROOT / 'backend' / 'requirements-audio.txt'
+    if audio_reqs.is_file() and importlib.util.find_spec('faster_whisper') is None:
+        print('Обнаружено отсутствие аудио-пакетов. Автоматическая установка requirements-audio.txt...', flush=True)
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', str(audio_reqs)])
+            print('Аудио-зависимости успешно установлены!', flush=True)
+        except Exception as e:
+            print(f'Предупреждение: не удалось автоматически установить аудио-зависимости: {e}', flush=True)
+
+
 def serve(port):
     import uvicorn
     from fastapi import HTTPException, Request as FastAPIRequest
@@ -94,8 +116,10 @@ def main():
     args = parser.parse_args()
     if args.stop:
         return stop()
-    if importlib.util.find_spec('uvicorn') is None:
-        raise SystemExit('Install dependencies first: python -m pip install -r requirements.txt')
+    
+    # Вызываем автопроверку и установку перед стартом
+    ensure_dependencies()
+
     if not (ROOT / 'frontend' / 'dist' / 'index.html').is_file():
         raise SystemExit('Build frontend first: cd frontend; pnpm install; pnpm build')
     if args.serve_port is not None:
