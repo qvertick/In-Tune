@@ -124,6 +124,131 @@ afterEach(() => {
 });
 
 describe("media clock performance", () => {
+  it("opens the requested welcome panel without autoplay or model jobs", async () => {
+    HTMLDialogElement.prototype.showModal = function () {
+      this.setAttribute("open", "");
+    };
+    HTMLDialogElement.prototype.close = function () {
+      this.removeAttribute("open");
+    };
+    const opened = vi.fn();
+    const view = render(
+      <Performance
+        song={timedSong()}
+        onBack={vi.fn()}
+        onSettings={vi.fn()}
+        initialPanel="sync"
+        onPanelOpened={opened}
+      />,
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Найти синхронизацию" }),
+    ).toBeTruthy();
+    expect(opened).toHaveBeenCalledTimes(1);
+    expect(play).not.toHaveBeenCalled();
+    view.unmount();
+    setupStems(true);
+    const mixerOpened = vi.fn();
+    const mixer = render(
+      <Performance
+        song={timedSong()}
+        onBack={vi.fn()}
+        onSettings={vi.fn()}
+        initialPanel="mixer"
+        onPanelOpened={mixerOpened}
+      />,
+    );
+    expect(
+      mixer.container.querySelector<HTMLDetailsElement>(".player-stems")?.open,
+    ).toBe(true);
+    expect(
+      mixer.container
+        .querySelector(".music-player")
+        ?.classList.contains("player-settings-open"),
+    ).toBe(true);
+    expect(
+      await screen.findByRole("slider", { name: "Громкость: Вокал" }),
+    ).toBeTruthy();
+    expect(mixerOpened).not.toHaveBeenCalled();
+    act(() => {
+      const pending = [...frames.values()];
+      frames.clear();
+      pending.forEach(callback => callback(0));
+    });
+    expect(mixerOpened).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(mixer.container.querySelector(".player-stems summary"));
+    expect(play).not.toHaveBeenCalled();
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.every(
+          ([, options]) => !options || options.method !== "POST",
+        ),
+    ).toBe(true);
+    mixer.unmount();
+    expect(frames.size).toBe(0);
+  });
+  it("previews vocals through intro and a real gap without painting future words or treating strum as lyrics", () => {
+    const timed = timedSong();
+    timed.sections[0].lines.forEach((line, i) => {
+      line.start = 30 + i * 10;
+      line.end = 35 + i * 10;
+    });
+    timed.sections.unshift({
+      id: "intro",
+      name: "Вступление х4",
+      lines: [
+        { id: "strum", text: "Бой: ↓ * ↓↑", chords: [], start: 0 },
+        {
+          id: "intro-chords",
+          text: "       }х4",
+          chords: [{ ...timed.sections[0].lines[0].chords[0], id: "intro-c" }],
+        },
+      ],
+    });
+    const original = JSON.stringify(timed);
+    const view = render(
+      <Performance song={timed} onBack={vi.fn()} onSettings={vi.fn()} />,
+    );
+    expect(
+      view.container
+        .querySelector(".player-reading-cue")
+        ?.getAttribute("data-reading-phase"),
+    ).toBe("instrumental");
+    expect(
+      view.container.querySelector(".reading-preview")?.textContent,
+    ).toContain(timed.sections[1].lines[0].text);
+    expect(view.container.querySelector(".player-line.is-active")).toBeNull();
+    expect(
+      view.container.querySelector(".reading-strum")?.textContent,
+    ).toContain("↓ * ↓↑");
+    expect(screen.queryByRole("button", { name: /Бой:/ })).toBeNull();
+    time(31);
+    expect(view.container.querySelector(".player-line.is-active")).toBeTruthy();
+    time(35);
+    expect(view.container.querySelector(".player-line.is-active")).toBeNull();
+    expect(
+      view.container
+        .querySelector('[data-follow-row="true"]')
+        ?.getAttribute("aria-label"),
+    ).toContain(timed.sections[1].lines[1].text);
+    expect(JSON.stringify(timed)).toBe(original);
+  });
+  it("keeps unknown phrase ends honest while still displaying upcoming words", () => {
+    const timed = timedSong();
+    delete timed.sections[0].lines[0].end;
+    const view = render(
+      <Performance song={timed} onBack={vi.fn()} onSettings={vi.fn()} />,
+    );
+    time(5);
+    expect(view.container.querySelector(".player-line.is-active")).toBeNull();
+    expect(view.container.querySelector(".reading-status")?.textContent).toBe(
+      "Конец фразы не отмечен",
+    );
+    expect(
+      view.container.querySelector(".reading-preview")?.textContent,
+    ).toContain(timed.sections[0].lines[1].text);
+  });
   it("rewinds only the visual clock on a paused short seek, then reaches the live time and cleans every loop", () => {
     let now = 1000;
     vi.spyOn(performance, "now").mockImplementation(() => now);

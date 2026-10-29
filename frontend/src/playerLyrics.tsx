@@ -20,6 +20,7 @@ export const PlayerLyricRow = memo(function PlayerLyricRow({
   playing = false,
   readPosition,
   highlighting = true,
+  following = active,
   activeRef,
   onSelect,
 }: {
@@ -34,6 +35,7 @@ export const PlayerLyricRow = memo(function PlayerLyricRow({
   playing?: boolean;
   readPosition?: () => number;
   highlighting?: boolean;
+  following?: boolean;
   activeRef: RefObject<HTMLButtonElement | null>;
   onSelect: (id: string) => void;
 }) {
@@ -56,6 +58,7 @@ export const PlayerLyricRow = memo(function PlayerLyricRow({
       ref={active ? activeRef : undefined}
       aria-label={`${t("Строка")} ${index + 1}: ${line.text || t("Инструментальная строка")}`}
       aria-current={active ? "step" : undefined}
+      data-follow-row={following ? "true" : undefined}
       aria-pressed={selected}
       onClick={() => onSelect(line.id)}
     >

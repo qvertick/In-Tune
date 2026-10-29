@@ -194,8 +194,8 @@ export function useLyricFollow(options: LyricFollowOptions) {
       }
       if (activeId === null) return;
       const row = lyrics.querySelector<HTMLElement>(
-        '.player-line[aria-current="step"]',
-      );
+        '[data-follow-row="true"]',
+      ) ?? lyrics.querySelector<HTMLElement>('.player-line[aria-current="step"]');
       if (!row) return;
       const ownerRect = owner.getBoundingClientRect();
       const rootRect = surface.getBoundingClientRect();

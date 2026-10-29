@@ -7,6 +7,7 @@ import { createSong } from "./model";
 import { ApiError, api } from "./api";
 import messages from "./messages";
 import extrasMessages from "./extraMessages";
+import welcomeMessages from "./welcomeMessages";
 import errorMessages from "./errorMessages";
 import {
   I18nProvider,
@@ -17,6 +18,7 @@ import {
 } from "./i18n";
 
 beforeEach(() => {
+  window.history.replaceState(null,"","/library");
   localStorage.clear();
   document.documentElement.lang = "ru";
   HTMLDialogElement.prototype.showModal = function () {
@@ -156,6 +158,7 @@ describe("translations and raw diagnostics", () => {
       ...messages,
       ...errorMessages,
       ...extrasMessages,
+      ...welcomeMessages,
     })) {
       const tokens = (text: string) =>
         [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();

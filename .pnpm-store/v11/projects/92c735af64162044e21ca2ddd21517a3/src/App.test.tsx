@@ -19,6 +19,7 @@ let documents: Map<string, Song>;
 let failSaves = false;
 let releaseUpload: (() => void) | undefined;
 beforeEach(() => {
+  window.history.replaceState(null, "", "/library");
   localStorage.clear();
   documents = new Map();
   failSaves = false;
@@ -270,9 +271,7 @@ describe("editor workflows in simulated DOM", () => {
     expect(current().title).toBe("Навстречу дню");
     cleanup();
     render(<App />);
-    await user.click(
-      await screen.findByRole("button", { name: /^Мой черновик/ }),
-    );
+    await screen.findByRole("textbox", { name: "Название песни" });
     expect(
       (
         screen.getByRole("textbox", {

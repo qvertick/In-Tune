@@ -9,6 +9,7 @@ import {
 } from "react";
 import messages from "./messages";
 import extrasMessages from "./extraMessages.ts";
+import welcomeMessages from "./welcomeMessages";
 import errorMessages, { errorCodeMessages } from "./errorMessages";
 
 export type Locale = "ru" | "en";
@@ -23,6 +24,7 @@ const english: Readonly<Record<string, string>> = {
   ...messages,
   ...errorMessages,
   ...extrasMessages,
+  ...welcomeMessages,
 };
 const intlLocales: Record<Locale, string> = { ru: "ru-RU", en: "en-US" };
 
