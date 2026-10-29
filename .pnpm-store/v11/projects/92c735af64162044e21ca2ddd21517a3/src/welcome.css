@@ -23,7 +23,7 @@
   padding-inline: var(--welcome-gutter)
     calc(var(--welcome-gutter) + var(--welcome-rail-space));
   border-bottom: 1px solid var(--border);
-  background: rgb(13 15 13 / 78%);
+  background: var(--welcome-nav-bg);
   -webkit-backdrop-filter: blur(10px) saturate(115%);
   backdrop-filter: blur(10px) saturate(115%);
 }
@@ -116,7 +116,7 @@
 .welcome-staff {
   cursor: pointer;
   fill: none;
-  stroke: #bbc7ac;
+  stroke: var(--muted);
   stroke-width: 1;
   opacity: 0.28;
   pointer-events: all;
@@ -139,7 +139,7 @@
 }
 .welcome-score-note {
   cursor: pointer;
-  fill: #bbc7ac;
+  fill: var(--muted);
   opacity: 0.44;
   pointer-events: all;
   outline: none;
@@ -224,9 +224,29 @@
   margin: 0 0 24px;
   overflow-wrap: normal;
 }
+.welcome-page .hero-line {
+  display: block;
+}
 .welcome-page em {
   font-style: normal;
   color: var(--accent);
+}
+.welcome-page .hero-rhythm {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+.welcome-page .hero-rhythm::after {
+  position: absolute;
+  right: 0.02em;
+  bottom: -0.035em;
+  left: 0.02em;
+  height: 0.075em;
+  border-radius: 55% 40% 48% 60%;
+  background: currentColor;
+  content: "";
+  transform: rotate(-2.2deg);
+  transform-origin: center;
 }
 .hero-description {
   font-size: clamp(15px, 1.3vw, 18px);
@@ -329,7 +349,7 @@
   display: block;
   height: 2px;
   width: 17px;
-  background: #79816f;
+  background: var(--muted);
   transition:
     width var(--duration),
     background var(--duration);
@@ -490,7 +510,7 @@
 }
 .demo-score p.is-current {
   border-color: var(--accent);
-  background: #b0c6a008;
+  background: var(--accent-soft);
 }
 .demo-word {
   position: relative;
@@ -498,7 +518,7 @@
   padding-top: 22px;
   white-space: pre;
   transition: color 160ms;
-  color: #8d9585;
+  color: var(--muted);
 }
 .demo-word.is-reached {
   color: var(--ink);
@@ -510,7 +530,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  color: #929f86;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 600;
   line-height: 20px;
@@ -576,7 +596,7 @@
   letter-spacing: -0.02em;
   font-weight: 500;
   margin: 0;
-  color: #c4c9bd;
+  color: var(--ink);
   transition: color var(--duration);
 }
 .welcome-workflow p,
@@ -596,7 +616,7 @@
 }
 .welcome-workflow > button[aria-current="step"] {
   border-left-color: var(--accent);
-  background: #b0c6a006;
+  background: var(--accent-soft);
 }
 .welcome-workflow > button[aria-current="step"] h3,
 .welcome-workflow > button[aria-current="step"] svg {
@@ -688,7 +708,7 @@
 }
 .chord-fret,
 .chord-string {
-  stroke: #69745e;
+  stroke: var(--border-strong);
   stroke-width: 1;
 }
 .chord-nut {
@@ -728,135 +748,6 @@
 .chord-lab-figure figcaption span {
   color: var(--muted);
   font-size: 12px;
-}
-.welcome-guitars {
-  width: min(100%, 1080px);
-  margin: 54px auto 0;
-  padding: 28px 30px 20px;
-  border-top: 1px solid var(--border);
-  text-align: left;
-}
-.welcome-guitars-copy {
-  max-width: 460px;
-}
-.welcome-guitars h3 {
-  margin: 7px 0 8px;
-  font-size: clamp(25px, 3vw, 38px);
-  font-weight: 500;
-  letter-spacing: -0.04em;
-}
-.welcome-guitars p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.guitar-garden {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: end;
-  gap: clamp(4px, 2vw, 24px);
-  margin-top: 12px;
-}
-.guitar-garden button {
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 0 4px 10px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 11px;
-  transition:
-    color var(--duration),
-    background var(--duration),
-    transform var(--duration);
-}
-.guitar-garden button:hover,
-.guitar-garden button:focus-visible,
-.guitar-garden button.is-active {
-  background: rgb(176 198 160 / 7%);
-  color: var(--accent-hover);
-}
-.guitar-garden button:hover,
-.guitar-garden button.is-active {
-  transform: translateY(-3px);
-}
-.guitar-garden button:nth-child(2) {
-  transform: translateY(12px) rotate(-3deg);
-}
-.guitar-garden button:nth-child(3) {
-  transform: translateY(-6px) rotate(2deg);
-}
-.guitar-garden button:nth-child(4) {
-  transform: translateY(8px) rotate(-1deg);
-}
-.guitar-garden button:nth-child(2):hover,
-.guitar-garden button:nth-child(2).is-active {
-  transform: translateY(8px) rotate(-3deg);
-}
-.guitar-garden button:nth-child(3):hover,
-.guitar-garden button:nth-child(3).is-active {
-  transform: translateY(-10px) rotate(2deg);
-}
-.guitar-garden button:nth-child(4):hover,
-.guitar-garden button:nth-child(4).is-active {
-  transform: translateY(4px) rotate(-1deg);
-}
-.guitar-garden svg {
-  width: min(100%, 156px);
-  height: 158px;
-  overflow: visible;
-}
-.guitar-body,
-.guitar-neck,
-.guitar-head,
-.guitar-hole,
-.guitar-strings,
-.guitar-pickups,
-.guitar-wave {
-  vector-effect: non-scaling-stroke;
-}
-.guitar-body,
-.guitar-neck,
-.guitar-head {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-}
-.guitar-neck {
-  fill: rgb(176 198 160 / 7%);
-}
-.guitar-hole {
-  fill: currentColor;
-  opacity: 0.38;
-}
-.guitar-strings,
-.guitar-pickups,
-.guitar-wave {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-  opacity: 0.65;
-}
-.guitar-garden button.is-active .guitar-body {
-  fill: rgb(176 198 160 / 11%);
-  stroke-width: 2;
-}
-.guitar-garden button.is-active .guitar-wave {
-  animation: guitar-wave 760ms ease-out both;
-}
-@keyframes guitar-wave {
-  0% {
-    opacity: 0.95;
-    stroke-width: 2.5;
-  }
-  100% {
-    opacity: 0.22;
-    stroke-width: 1;
-  }
 }
 [data-welcome-section][data-reveal="true"] > .welcome-section-grid {
   opacity: 0.3;
@@ -953,9 +844,6 @@
   .welcome-chord-lab {
     grid-template-columns: minmax(0, 1fr) 180px;
     padding: 24px;
-  }
-  .guitar-garden svg {
-    height: 136px;
   }
 }
 @media (max-width: 600px) {
@@ -1069,18 +957,6 @@
     flex-direction: column;
     gap: 3px;
   }
-  .welcome-guitars {
-    margin-top: 40px;
-    padding: 23px 0 8px;
-  }
-  .guitar-garden {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 4px 14px;
-    margin-top: 18px;
-  }
-  .guitar-garden svg {
-    height: 126px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   [data-welcome-section][data-reveal="true"] > .welcome-section-grid {
@@ -1095,13 +971,8 @@
   .welcome-video {
     display: none;
   }
-  .welcome-score-note.is-pulsing .score-note-ring,
-  .guitar-garden button.is-active .guitar-wave {
+  .welcome-score-note.is-pulsing .score-note-ring {
     animation: none;
-  }
-  .guitar-garden button,
-  .guitar-garden button:nth-child(n) {
-    transform: none;
   }
 }
 @media (forced-colors: active) {

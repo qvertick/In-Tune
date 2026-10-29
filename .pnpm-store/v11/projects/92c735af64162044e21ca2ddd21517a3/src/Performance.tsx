@@ -36,7 +36,6 @@ import { wordPlan } from "./wordTiming";
 import LrclibDialog from "./LrclibDialog";
 import { useI18n } from "./i18n";
 import { translateError } from "./i18n";
-import PolicyFooter from "./PolicyFooter";
 import { useVisualSeek } from "./useVisualSeek";
 import { useLyricFollow } from "./useLyricFollow";
 import { readingRows, readingState } from "./playerReading";
@@ -693,6 +692,7 @@ function Player({
               backingMix={player.backingMix}
               onVocalMix={player.setVocalMix}
               onBackingMix={player.setBackingMix}
+              onActivateMix={() => player.changeMode("custom")}
             />
           )}
           <div className="player-save">
@@ -711,7 +711,6 @@ function Player({
               </button>
             )}
           </div>
-          {!clean && <PolicyFooter />}
         </aside>
 
         <section className="player-main" aria-label={t("Текст и разметка")}>

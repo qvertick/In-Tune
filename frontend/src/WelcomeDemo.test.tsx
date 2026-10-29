@@ -64,27 +64,33 @@ it("autoplays only sufficiently visible and advances words, lines and chords wit
   expect(vi.getTimerCount()).toBe(0);
   visible(root, 0.5);
   expect(vi.getTimerCount()).toBe(1);
-  expect(current(view.container)).toContain("Тихий");
+  expect(current(view.container)).toContain("Расскажи");
+  expect(view.container.querySelector(".demo-caption")?.textContent).toContain(
+    "В.Цой - группа кино",
+  );
+  const demoText = view.container.querySelector(".demo-score")?.textContent;
+  expect(demoText).toContain("Расскажи");
+  expect(demoText).toContain("мира,");
   expect(view.container.querySelector(".is-current-chord")?.textContent).toBe(
     "Am",
   );
   advance(2300);
-  expect(current(view.container)).toContain("на");
+  expect(current(view.container)).toContain("этого");
   expect(view.container.querySelector(".is-current-chord")?.textContent).toBe(
     "G",
   );
   advance(1900);
-  expect(current(view.container)).toContain("Этот");
+  expect(current(view.container)).toContain("Удивись");
   const plan = demoTimeline([
-    "Тихий свет ложится на ладони.",
-    "Этот ритм останется со мной.",
-    "Пусть звучит ещё одна история.",
-    "Пой со мной. Играй со мной.",
+    "Расскажи мне историю этого мира,",
+    "Удивись количеству прожитых лет,",
+    "Расскажи, каково быть мишенью в тире,",
+    "И как выглядит пуля, летящая в свет.",
   ]);
   advance(plan.words.at(-1)!.end - 4200 + 10);
   expect(view.container.querySelector(".is-current-word")).toBeNull();
   advance(plan.duration - plan.words.at(-1)!.end + 10);
-  expect(current(view.container)).toContain("Тихий");
+  expect(current(view.container)).toContain("Расскажи");
 });
 it("pauses, resumes and restarts without losing or accumulating elapsed time", () => {
   const view = render(<WelcomeDemo />),
@@ -100,9 +106,9 @@ it("pauses, resumes and restarts without losing or accumulating elapsed time", (
   advance(1000);
   expect(current(view.container)).not.toBe(word);
   fireEvent.click(screen.getByRole("button", { name: "Сначала" }));
-  expect(current(view.container)).toContain("Тихий");
+  expect(current(view.container)).toContain("Расскажи");
   advance(800);
-  expect(current(view.container)).toContain("свет");
+  expect(current(view.container)).toContain("мне");
 });
 it("freezes offscreen and in hidden tabs, preserves its place on visibility notifications and releases all timers", () => {
   const view = render(<WelcomeDemo />),
@@ -145,7 +151,7 @@ it("has a static reduced-motion presentation with manual next line and restart, 
   visible(root, 1);
   expect(vi.getTimerCount()).toBe(0);
   fireEvent.click(screen.getByRole("button", { name: "Следующая строка" }));
-  expect(current(view.container)).toContain("Этот");
+  expect(current(view.container)).toContain("Удивись");
   fireEvent.click(screen.getByRole("button", { name: "Сначала" }));
-  expect(current(view.container)).toContain("Тихий");
+  expect(current(view.container)).toContain("Расскажи");
 });

@@ -166,6 +166,11 @@ describe("translations and raw diagnostics", () => {
     }
     expect(translate("en", "Библиотека")).toBe("Library");
     expect(translate("en", "Настройки")).toBe("Settings");
+    expect(translate("en", "Песня и ты")).toBe("You and the song");
+    expect(translate("en", "— в одном")).toBe("— in one");
+    expect(translate("en", "ритме")).toBe("rhythm");
+    expect(translate("en", "Базовые Аккорды")).toBe("Basic Chords");
+    expect(translate("en", "В.Цой - группа кино")).toBe("V. Tsoi - Kino");
   });
   it("interpolates once, merges extras, and preserves unknown keys and inserted song text", () => {
     expect(

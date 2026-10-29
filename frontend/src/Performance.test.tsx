@@ -666,6 +666,34 @@ describe("media clock performance", () => {
     expect(v.paused).toBe(true);
     expect(a.paused).toBe(true);
   });
+  it("switches from the original to the custom mix when a stem control is adjusted", async () => {
+    setupStems(true);
+    const user = userEvent.setup();
+    render(
+      <Performance song={timedSong()} onBack={vi.fn()} onSettings={vi.fn()} />,
+    );
+    await waitFor(() =>
+      expect(
+        (screen.getByRole("option", { name: "Свой микс" }) as HTMLOptionElement)
+          .disabled,
+      ).toBe(false),
+    );
+    await user.click(screen.getByRole("button", { name: "Воспроизвести" }));
+    expect(media().paused).toBe(false);
+    fireEvent.click(screen.getByText(/Вокал и аккомпанемент/));
+    fireEvent.change(screen.getByLabelText("Громкость: Вокал"), {
+      target: { value: ".4" },
+    });
+    expect(
+      (screen.getByLabelText("Режим звучания") as HTMLSelectElement).value,
+    ).toBe("custom");
+    expect(media().paused).toBe(true);
+    expect(media("player-vocals").paused).toBe(false);
+    expect(media("player-accompaniment").paused).toBe(false);
+    expect(media("player-vocals").volume).toBeCloseTo(0.32);
+    await user.click(screen.getByLabelText("Без звука: Вокал"));
+    expect(media("player-vocals").muted).toBe(true);
+  });
   it("shows actionable installation status when stems are missing", async () => {
     const user = userEvent.setup();
     render(
@@ -690,6 +718,48 @@ describe("media clock performance", () => {
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/stems"),
       expect.anything(),
+    );
+  });
+  it("keeps application policy links out of the player", () => {
+    render(
+      <Performance song={timedSong()} onBack={vi.fn()} onSettings={vi.fn()} />,
+    );
+    expect(
+      screen.queryByRole("navigation", { name: "О приложении" }),
+    ).toBeNull();
+  });
+  it("starts local stem separation from player settings when available", async () => {
+    const user = userEvent.setup();
+    const request = vi.fn(async (input: string) => {
+      if (input.endsWith("/stems")) return Response.json({ ready: false });
+      if (input.endsWith("/separation/status"))
+        return Response.json({
+          available: true,
+          modelInstalled: true,
+          command: "",
+        });
+      if (input.endsWith("/jobs")) return Response.json([]);
+      return Response.json({
+        id: "separation-job",
+        songId: song.id,
+        kind: "separation",
+        status: "queued",
+      });
+    });
+    vi.stubGlobal("fetch", request);
+    render(
+      <Performance song={timedSong()} onBack={vi.fn()} onSettings={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByText(/Вокал и аккомпанемент/));
+    const start = await screen.findByRole("button", {
+      name: "Подготовить дорожки",
+    });
+    await user.click(start);
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        `/api/songs/${song.id}/separation`,
+        expect.objectContaining({ method: "POST" }),
+      ),
     );
   });
   it("pauses both stems when the follower buffers, then resumes together without losing master position", async () => {

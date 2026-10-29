@@ -39,7 +39,8 @@ export default function LrclibDialog({
     [selected, setSelected] = useState<LrclibTrack | null>(null);
   const [busy, setBusy] = useState(false),
     [searched, setSearched] = useState(false),
-    [error, setError] = useState<string | Error>("");
+    [error, setError] = useState<string | Error>(""),
+    [suggestLrclib, setSuggestLrclib] = useState(false);
   const [shift, setShift] = useState("0"),
     [confirm, setConfirm] = useState(false);
   const request = useRef<AbortController | null>(null),
@@ -135,6 +136,7 @@ export default function LrclibDialog({
     setBusy(true);
     setResults([]);
     setError("");
+    setSuggestLrclib(false);
     setRetryUntil(0);
     setSearched(true);
     setSelected(null);
@@ -165,6 +167,10 @@ export default function LrclibDialog({
     } catch (cause) {
       if (token !== generation.current) return;
       setResults([]);
+      setSuggestLrclib(
+        cause instanceof ApiError &&
+          (cause.status === 429 || cause.status >= 500),
+      );
       if (
         cause instanceof ApiError &&
         cause.retryAfter !== undefined &&
@@ -303,6 +309,17 @@ export default function LrclibDialog({
           >
             {t("Повторить запрос")}
           </button>
+          {suggestLrclib && (
+            <a
+              className="lrclib-site-link"
+              href="https://lrclib.net"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink size={15} />
+              {t("Открыть LRCLIB")}
+            </a>
+          )}
         </div>
       )}
       {!busy && searched && !results.length && !error && (

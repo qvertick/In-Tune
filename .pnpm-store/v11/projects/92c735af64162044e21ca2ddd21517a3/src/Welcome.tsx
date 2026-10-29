@@ -14,7 +14,6 @@ import { useWelcomeLight } from "./useWelcomeScene";
 import "./welcome.css";
 import WelcomeDemo from "./WelcomeDemo";
 import WelcomeChords from "./WelcomeChords";
-import WelcomeGuitars from "./WelcomeGuitars";
 import WelcomeMusicScore from "./WelcomeMusicScore";
 import { useWelcomePosition } from "./welcomePosition";
 
@@ -215,11 +214,11 @@ export default function Welcome({
               {PRODUCT_NAME} <span>/ {APP_NAME}</span>
             </p>
             <h1>
-              {t("Твой голос.")}
-              <br />
-              {t("Твои струны.")}
-              <br />
-              <em>{t("В одном ритме.")}</em>
+              <span className="hero-line">{t("Песня и ты")}</span>
+              <span className="hero-line">{t("— в одном")}</span>
+              <span className="hero-line">
+                <em className="hero-rhythm">{t("ритме")}</em>
+              </span>
             </h1>
             <p className="hero-description">
               {t(
@@ -366,14 +365,17 @@ export default function Welcome({
         >
           <div className="welcome-section-label">04 / {t("Начать")}</div>
           <Music2 size={30} aria-hidden="true" />
-          <h2>{t("Пусть звучит.")}</h2>
-          <p>{t("Одна песня. Немного времени. Твой собственный ритм.")}</p>
+          <h2>{t("Базовые Аккорды")}</h2>
+          <p>
+            {t(
+              "Добавь песню, найди своё звучание и возвращайся к музыке в любой момент.",
+            )}
+          </p>
           <button className="primary" onClick={() => onLibrary()}>
             {t("Открыть библиотеку")}
             <ArrowRight size={18} />
           </button>
           <WelcomeChords />
-          <WelcomeGuitars />
           <PolicyFooter />
         </section>
       </main>

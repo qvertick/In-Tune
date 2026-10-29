@@ -32,6 +32,21 @@
   flex: 1;
   margin: 0;
 }
+.lrclib-site-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+.lrclib-site-link:hover {
+  border-color: var(--accent);
+}
 .lrclib-results {
   max-height: 290px;
   overflow: auto;

@@ -12,6 +12,7 @@ export const NAV_KEYS = {
   always: "in-tune.welcome.always",
   last: "in-tune.last-route",
   song: "in-tune.last-song",
+  theme: "in-tune.theme",
 };
 const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 export const readSetting = (key: string) => {
@@ -21,7 +22,7 @@ export const readSetting = (key: string) => {
     return null;
   }
 };
-function write(key: string, value: string) {
+export function writeSetting(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
   } catch {
@@ -60,14 +61,14 @@ export function initialRoute(path: string): Route {
 }
 function remember(route: Route) {
   if (route.view === "welcome") return;
-  write(NAV_KEYS.seen, "true");
-  write(
+  writeSetting(NAV_KEYS.seen, "true");
+  writeSetting(
     NAV_KEYS.last,
     routePath(
       route.view === "performance" ? { ...route, view: "editor" } : route,
     ),
   );
-  if (route.songId) write(NAV_KEYS.song, route.songId);
+  if (route.songId) writeSetting(NAV_KEYS.song, route.songId);
 }
 export function useNavigation() {
   const [route, setRoute] = useState(() =>
@@ -97,7 +98,7 @@ export function useNavigation() {
     document.documentElement.scrollTo?.({ top: 0, behavior: "instant" });
   }, []);
   const setWelcomeAtStartup = useCallback((value: boolean) => {
-    write(NAV_KEYS.always, String(value));
+    writeSetting(NAV_KEYS.always, String(value));
     setAlways(value);
   }, []);
   return { route, navigate, welcomeAtStartup, setWelcomeAtStartup };

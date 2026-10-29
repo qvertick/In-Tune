@@ -114,12 +114,14 @@ export function StemControls({
   backingMix,
   onVocalMix,
   onBackingMix,
+  onActivateMix,
 }: {
   separation: ReturnType<typeof useStems>;
   vocalMix: StemMix;
   backingMix: StemMix;
   onVocalMix: (mix: StemMix) => void;
   onBackingMix: (mix: StemMix) => void;
+  onActivateMix: () => void;
 }) {
   const { t, locale } = useI18n();
   const { stems, status, job, error, active, busy } = separation;
@@ -138,7 +140,7 @@ export function StemControls({
         <div className="player-fields">
           <p>
             {t(
-              "Дорожки передаются потоком. Плеер корректирует заметное расхождение; синхронизация не является посэмпловой.",
+              "Настройка дорожек включает «Свой микс». Дорожки передаются потоком; плеер корректирует заметное расхождение, но синхронизация не является посэмпловой.",
             )}
           </p>
           {(
@@ -157,18 +159,20 @@ export function StemControls({
                   max="1"
                   step="0.01"
                   value={mix.volume}
-                  onChange={(event) =>
-                    change({ ...mix, volume: Number(event.target.value) })
-                  }
+                  onChange={(event) => {
+                    change({ ...mix, volume: Number(event.target.value) });
+                    onActivateMix();
+                  }}
                 />
               </label>
               <label>
                 <input
                   type="checkbox"
                   checked={mix.muted}
-                  onChange={(event) =>
-                    change({ ...mix, muted: event.target.checked })
-                  }
+                  onChange={(event) => {
+                    change({ ...mix, muted: event.target.checked });
+                    onActivateMix();
+                  }}
                 />
                 {t("Без звука: ")}
                 {label}

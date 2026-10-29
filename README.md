@@ -1,4 +1,10 @@
-# В лад
+<p align="center">
+  <img src="Img/logo_InTune.png" alt="In Tune" width="450">
+</p>
+
+<h3 align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=JetBrainsMono+Nerd+Font&size=18&pause=1000&color=D1FCD2&center=true&width=560&lines=Your+music.+Your+rhythm.+Your+flow.;Play+the+music.+Watch+the+lyrics+follow.;Every+note+finds+its+place.;Lyrics+that+move+with+your+performance.;Feel+the+rhythm.+See+the+music.;Your+performance%2C+perfectly+in+sync.;Where+every+word+meets+every+note.;Let+the+lyrics+follow+your+lead.;More+than+playing.+It%27s+an+experience.;Music+in+motion.+Lyrics+in+sync.;Your+sound.+Your+timing.+Your+stage.;Illuminate+every+moment+of+music.;Made+for+musicians.+Built+for+the+flow.;Turn+every+session+into+a+performance.;Stay+in+rhythm.+Stay+In-Tune.">
+</h3>
 
 Локальный песенник, редактор аккордов и плеер с синхронным текстом. React + TypeScript + Vite, FastAPI, SQLite. Основной путь: **импортировать разбор → прикрепить MP3 → найти синхронизацию → выбрать вариант → воспроизвести**.
 

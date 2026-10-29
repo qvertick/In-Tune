@@ -42,9 +42,9 @@ const welcomeMessages: Record<string, string> = {
   "В библиотеку": "Library",
   "Личное музыкальное пространство": "Your personal music space",
   "Локально. В твоём ритме.": "Local. At your own pace.",
-  "Твой голос.": "Your voice.",
-  "Твои струны.": "Your strings.",
-  "В одном ритме.": "One rhythm.",
+  "Песня и ты": "You and the song",
+  "— в одном": "— in one",
+  ритме: "rhythm",
   "Текст, аккорды и музыка в одном месте. Чтобы меньше искать — и больше играть.":
     "Lyrics, chords and music in one place. Less searching. More playing.",
   "Открыть библиотеку": "Open library",
@@ -57,17 +57,13 @@ const welcomeMessages: Record<string, string> = {
     "Chords above the right letters. Upcoming lines in view. Lyrics follow your recording, leaving you room for the music.",
   "С настоящей разметкой — по словам. Без неё — по строкам или приблизительно.":
     "With word timestamps, follow each word. Otherwise, use line timing or an optional estimate.",
-  "Авторский пример": "Original example",
+  "В.Цой - группа кино": "V. Tsoi - Kino",
   "Демонстрация · без звука": "Visual demo · no audio",
   "Пример текста с аккордами": "Lyrics and chords example",
   "Показать подсветку": "Preview highlighting",
   "Остановить пример": "Stop preview",
   "Только визуальный пример. Микрофон не используется.":
     "Visual example only. No microphone is used.",
-  "Тихий свет ложится на ладони.": "Quiet light falls into our hands.",
-  "Этот ритм останется со мной.": "I will keep this rhythm close to me.",
-  "Пусть звучит ещё одна история.": "Let another story find its sound.",
-  "Пой со мной. Играй со мной.": "Sing with me. Play with me.",
   "Интерактивные ноты": "Interactive notes",
   "Пульсировать ноту {number}": "Pulse note {number}",
   "Подсветить нотную линейку": "Highlight staff lines",
@@ -88,18 +84,9 @@ const welcomeMessages: Record<string, string> = {
     "Play along with the original, prepared vocals or accompaniment. Find your balance in the mixer.",
   "Разделение дорожек требует отдельной локальной установки. Модели не загружаются из приветствия.":
     "Stem separation requires a separate local installation. The welcome page never downloads models.",
-  "Пусть звучит.": "Let it play.",
-  "Одна песня. Немного времени. Твой собственный ритм.":
-    "One song. A little time. Your own rhythm.",
-  "Выбери свой инструмент": "Choose your instrument",
-  "У каждой гитары — свой голос.": "Every guitar has its own voice.",
-  "Нажми на силуэт, чтобы подсветить его. Это небольшой интерактив без звука.":
-    "Select a silhouette to highlight it. This small interaction has no sound.",
-  "Виды гитар": "Guitar types",
-  Акустическая: "Acoustic",
-  Трансакустическая: "TransAcoustic",
-  Электрогитара: "Electric guitar",
-  Электроакустическая: "Electro-acoustic",
+  "Базовые Аккорды": "Basic Chords",
+  "Добавь песню, найди своё звучание и возвращайся к музыке в любой момент.":
+    "Add a song, find your sound, and come back to the music whenever you like.",
   "В браузере также сохраняются настройка приветствия и последняя открытая рабочая страница. Эти сведения не отправляются внешним сервисам.":
     "Your browser also stores the welcome preference and last workspace page. These details are not sent to external services.",
 };

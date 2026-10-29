@@ -63,6 +63,9 @@ it("replays the failed URL snapshot after a real Retry-After expires, only on cl
   );
   expect(screen.getByRole("alert").textContent).toContain("LRCLIB перегружен");
   expect(screen.getByRole("alert").textContent).toContain("1 с.");
+  const lrclibLink = screen.getByRole("link", { name: "Открыть LRCLIB" });
+  expect(lrclibLink.getAttribute("href")).toBe("https://lrclib.net");
+  expect(lrclibLink.getAttribute("target")).toBe("_blank");
   const retry = screen.getByRole("button", {
     name: "Повторить запрос",
   }) as HTMLButtonElement;
@@ -79,6 +82,7 @@ it("replays the failed URL snapshot after a real Retry-After expires, only on cl
   expect(fetch.mock.calls[1][0]).toBe(fetch.mock.calls[0][0]);
   expect(fetch.mock.calls[1][0]).toBe("/api/lrclib/track?id=20902008");
   expect(screen.queryByRole("alert")).toBeNull();
+  expect(screen.queryByRole("link", { name: "Открыть LRCLIB" })).toBeNull();
   expect(
     screen.getByText(/В этом варианте нет синхронизированного текста/),
   ).toBeTruthy();

@@ -33,7 +33,7 @@ html:has(.music-player) {
   color: var(--player-ink);
   padding: 22px 32px 0;
   font-family: inherit;
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 .music-player *,
 .music-player *::before,

@@ -26,10 +26,10 @@ export default function WelcomeDemo() {
   const { t } = useI18n();
   const root = useRef<HTMLDivElement>(null);
   const lines = [
-    t("Тихий свет ложится на ладони."),
-    t("Этот ритм останется со мной."),
-    t("Пусть звучит ещё одна история."),
-    t("Пой со мной. Играй со мной."),
+    t("Расскажи мне историю этого мира,"),
+    t("Удивись количеству прожитых лет,"),
+    t("Расскажи, каково быть мишенью в тире,"),
+    t("И как выглядит пуля, летящая в свет."),
   ];
   const plan = useMemo(() => demoTimeline(lines), [lines.join("\n")]);
   const [visible, setVisible] = useState(false),
@@ -139,7 +139,7 @@ export default function WelcomeDemo() {
       <div className="demo-caption">
         <span>
           <span className="local-dot" />
-          {t("Авторский пример")}
+          {t("В.Цой - группа кино  (Вопрос)")}
         </span>
         <span>{t("Демонстрация · без звука")}</span>
       </div>

@@ -10,6 +10,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { createSong, type Song } from "./model";
+import { NAV_KEYS } from "./navigation";
 
 // These are complete editor workflows with many real user events and autosaves.
 // A small CPU must not fail them solely on Vitest's five-second default.
@@ -92,6 +93,34 @@ async function openDemo() {
 const current = () => [...documents.values()][0];
 
 describe("editor workflows in simulated DOM", () => {
+  it("defaults to dark mode and persists the light theme switch", async () => {
+    const user = userEvent.setup();
+    const view = render(<App />);
+    await user.click(screen.getByRole("button", { name: "Настройки" }));
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toBe("dark");
+      expect(localStorage.getItem(NAV_KEYS.theme)).toBe("dark");
+    });
+
+    const toggle = screen.getByRole("switch", { name: "Тема оформления" });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    await user.click(toggle);
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toBe("light");
+      expect(localStorage.getItem(NAV_KEYS.theme)).toBe("light");
+    });
+
+    view.unmount();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Настройки" }));
+    expect(
+      screen.getByRole("switch", { name: "Тема оформления" }).getAttribute(
+        "aria-checked",
+      ),
+    ).toBe("true");
+    expect(document.documentElement.dataset.theme).toBe("light");
+  });
+
   it("moves and deletes an occurrence and confirms a counted global replacement", async () => {
     const user = userEvent.setup();
     const song = await openDemo();

@@ -127,8 +127,9 @@ const messages: Record<string, string> = {
   доступен: "available",
   "не найден": "not found",
   Оформление: "Appearance",
-  "Тёмная тема. Размер текста исполнения сохраняется отдельно для каждой песни.":
-    "Dark theme. Performance text size is saved separately for each song.",
+  "Тема оформления": "Appearance theme",
+  "Луна — тёмная тема, солнце — светлая. Выбор сохраняется на этом компьютере.":
+    "Moon is dark mode, sun is light mode. Your choice is saved on this computer.",
   "Заменить все вхождения": "Replace all occurrences",
   Аккорд: "Chord",
   "Заменить на": "Replace with",
@@ -291,8 +292,8 @@ const messages: Record<string, string> = {
   "· готовы": "· ready",
   "· подготовка": "· preparing",
   "· подготовить": "· prepare",
-  "Дорожки передаются потоком. Плеер корректирует заметное расхождение; синхронизация не является посэмпловой.":
-    "Tracks are streamed. The player corrects noticeable drift; synchronization is not sample-accurate.",
+  "Настройка дорожек включает «Свой микс». Дорожки передаются потоком; плеер корректирует заметное расхождение, но синхронизация не является посэмпловой.":
+    "Adjusting either stem switches to Custom mix. Stems stream separately; the player corrects noticeable drift, but synchronization is not sample-accurate.",
   Вокал: "Vocals",
   Аккомпанемент: "Accompaniment",
   "Громкость: {label}": "Volume: {label}",

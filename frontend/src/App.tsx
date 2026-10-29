@@ -31,9 +31,17 @@ import {
   Pencil,
   BookOpen,
   Save,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { APP_NAME, PRODUCT_NAME } from "./config";
-import { NAV_KEYS, readSetting, useNavigation, type View } from "./navigation";
+import {
+  NAV_KEYS,
+  readSetting,
+  useNavigation,
+  writeSetting,
+  type View,
+} from "./navigation";
 import { createSong, id, normalizeChord, type Song, type Line } from "./model";
 const Performance = lazy(() => import("./Performance"));
 const LrclibDialog = lazy(() => import("./LrclibDialog"));
@@ -449,6 +457,14 @@ function AppContent() {
   const { t, locale, setLocale, formatDate } = useI18n();
   const { route, navigate, welcomeAtStartup, setWelcomeAtStartup } =
     useNavigation();
+  const [lightTheme, setLightTheme] = useState(
+    () => readSetting(NAV_KEYS.theme) === "light",
+  );
+  useEffect(() => {
+    const theme = lightTheme ? "light" : "dark";
+    document.documentElement.dataset.theme = theme;
+    writeSetting(NAV_KEYS.theme, theme);
+  }, [lightTheme]);
   const view = route.view;
   const [songs, setSongs] = useState<Song[]>([]);
   const [selected, setSelected] = useState<string | null>(
@@ -1774,9 +1790,24 @@ function AppContent() {
                 <span>05</span>
                 <h2>{t("Оформление")}</h2>
               </div>
-              <p>
+              <button
+                type="button"
+                className="theme-toggle"
+                role="switch"
+                aria-label={t("Тема оформления")}
+                aria-checked={lightTheme}
+                aria-describedby="theme-toggle-description"
+                onClick={() => setLightTheme((current) => !current)}
+              >
+                <Moon size={16} aria-hidden="true" />
+                <span className="theme-toggle-track" aria-hidden="true">
+                  <span className="theme-toggle-thumb" />
+                </span>
+                <Sun size={17} aria-hidden="true" />
+              </button>
+              <p id="theme-toggle-description">
                 {t(
-                  "Тёмная тема. Размер текста исполнения сохраняется отдельно для каждой песни.",
+                  "Луна — тёмная тема, солнце — светлая. Выбор сохраняется на этом компьютере.",
                 )}
               </p>
             </section>

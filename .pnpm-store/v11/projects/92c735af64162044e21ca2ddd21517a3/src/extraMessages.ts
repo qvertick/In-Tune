@@ -35,6 +35,7 @@ const extrasMessages: Record<string, string> = {
   "К текущей строке": "Back to current line",
   "Подсветка текста": "Text highlighting",
   "Повторить запрос": "Retry request",
+  "Открыть LRCLIB": "Open LRCLIB",
   "LRCLIB перегружен. Повторите запрос позже.":
     "LRCLIB is overloaded. Try again later.",
   "Спецификация Lyricsfile": "Lyricsfile specification",

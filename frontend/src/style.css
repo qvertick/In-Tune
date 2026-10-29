@@ -567,7 +567,38 @@ audio {
   height: 38px;
   display: block;
   margin-bottom: 12px;
-  color-scheme: dark;
+  color-scheme: inherit;
+}
+.theme-toggle {
+  justify-self: start;
+  gap: 12px;
+  padding: 6px 10px;
+  color: var(--muted);
+}
+.theme-toggle[aria-checked="true"] {
+  color: var(--accent);
+}
+.theme-toggle-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 28px;
+  padding: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-raised);
+}
+.theme-toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(0);
+  transition: transform var(--duration);
+}
+.theme-toggle[aria-checked="true"] .theme-toggle-thumb {
+  transform: translateX(24px);
 }
 .audio-panel button {
   font-size: 11px;

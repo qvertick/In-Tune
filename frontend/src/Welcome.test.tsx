@@ -54,6 +54,8 @@ it("uses four real section anchors with described tooltips and reduced motion na
     removeEventListener: vi.fn(),
   }));
   const view = render(<Welcome onLibrary={vi.fn()} />);
+  expect(screen.queryByText("У каждой гитары — свой голос.")).toBeNull();
+  expect(screen.queryByRole("radiogroup", { name: "Виды гитар" })).toBeNull();
   const section = view.container.querySelector("#welcome-sound")!;
   const scroll = vi.fn();
   Object.defineProperty(section, "scrollIntoView", { value: scroll });
@@ -73,6 +75,20 @@ it("uses four real section anchors with described tooltips and reduced motion na
   expect(
     view.container.querySelector(".welcome-hero")?.getAttribute("data-light"),
   ).toBe("static");
+});
+it("shows the refreshed Russian hero and closing copy", () => {
+  render(<Welcome onLibrary={vi.fn()} />);
+  const heading = screen.getByRole("heading", { level: 1 });
+  expect([...heading.querySelectorAll(".hero-line")].map((line) => line.textContent))
+    .toEqual(["Песня и ты", "— в одном", "ритме"]);
+  expect(
+    screen.getByRole("heading", { name: "Базовые Аккорды" }),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      "Добавь песню, найди своё звучание и возвращайся к музыке в любой момент.",
+    ),
+  ).toBeTruthy();
 });
 it("runs actual search, synchronization and mixer actions without sending requests or playing audio on welcome", () => {
   const library = vi.fn(),
