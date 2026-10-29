@@ -8,22 +8,14 @@ import {
   useState,
 } from "react";
 import type { CSSProperties } from "react";
-import {
-  ArrowLeft,
-  Maximize,
-  Pause,
-  Play,
-  RotateCcw,
-  SlidersHorizontal,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowLeft, Maximize, Pause, Play, RotateCcw } from "lucide-react";
 import { PlayerLyricRow } from "./playerLyrics";
 import type { Song } from "./model";
 import TimingEditor from "./TimingEditor";
 import LrcImport from "./lrcImport";
 import SyncMarker from "./SyncMarker";
 import {
+  activeAt,
   allLines,
   formatTime,
   lineStart,
@@ -39,9 +31,6 @@ import { translateError } from "./i18n";
 import PolicyFooter from "./PolicyFooter";
 import { useVisualSeek } from "./useVisualSeek";
 import { useLyricFollow } from "./useLyricFollow";
-import { readingRows, readingState } from "./playerReading";
-import { linePresentation, sectionPresentation } from "./songPresentation";
-import { InstrumentRow, ReadingCue } from "./playerInstrument";
 import "./lyricFollow.css";
 import { usePlayerMedia } from "./playerMedia";
 import type { MixMode } from "./playerMedia";
@@ -59,23 +48,13 @@ type Props = {
   onSettings: (settings: Song["performance"]) => void;
   onSong?: (song: Song) => void;
   saveStatus?: string;
-  initialPanel?: "sync" | "mixer";
-  onPanelOpened?: () => void;
 };
 
 export default function Performance(props: Props) {
   return <Player key={props.song.id} {...props} />;
 }
 
-function Player({
-  song,
-  onBack,
-  onSettings,
-  onSong,
-  saveStatus,
-  initialPanel,
-  onPanelOpened,
-}: Props) {
+function Player({ song, onBack, onSettings, onSong, saveStatus }: Props) {
   const { t, locale } = useI18n();
   const restored = useMemo(() => {
     try {
@@ -101,37 +80,9 @@ function Player({
     { song: Song; selectedId: string | null }[]
   >([]);
   const [clean, setClean] = useState(false);
-  const [mobileSettings, setMobileSettings] = useState(false);
   const [toolMode, setToolMode] = useState<"manual" | "lrc" | null>(null);
   const toolsOpen = toolMode !== null;
   const [lrclibOpen, setLrclibOpen] = useState(false);
-  useEffect(() => {
-    if (!initialPanel) return;
-    if (initialPanel === "sync") {
-      setLrclibOpen(true);
-      onPanelOpened?.();
-      return;
-    }
-    setMobileSettings(true);
-    const mixer =
-      root.current?.querySelector<HTMLDetailsElement>(".player-stems");
-    if (mixer) mixer.open = true;
-    // Wait for the mobile panel to become visible, then scroll its own pane.
-    const frame = requestAnimationFrame(() => {
-      const side = root.current?.querySelector<HTMLElement>(".player-side");
-      if (side && mixer) {
-        side.scrollTo?.({
-          top: Math.max(0, mixer.offsetTop - side.offsetTop - 12),
-          behavior: "instant",
-        });
-        mixer
-          .querySelector<HTMLElement>("summary")
-          ?.focus({ preventScroll: true });
-      }
-      onPanelOpened?.();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [initialPanel, onPanelOpened]);
   const [approximate, setApproximate] = useState(() => {
     try {
       return localStorage.getItem("vlad-approximate-words") === "true";
@@ -215,10 +166,6 @@ function Player({
     [working, duration],
   );
   const rows = useMemo(() => allLines(working), [working.sections]);
-  const readingDocument = useMemo(
-    () => readingRows(working),
-    [working.sections],
-  );
   const rowIndex = useMemo(
     () => new Map(rows.map((line, index) => [line.id, index])),
     [rows],
@@ -243,20 +190,18 @@ function Player({
   const visual = useVisualSeek(
     player.readPosition,
     (time) => {
-      const state = readingState(readingDocument, time);
-      const lineId = state.activeId;
+      const lineId = activeAt(map, time);
       const index =
         wordPlans
           .get(lineId ?? "")
           ?.words.findIndex((word) => time >= word.start && time < word.end) ??
         -1;
-      return `${lineId}:${state.focusId}:${index}`;
+      return `${lineId}:${index}`;
     },
     highlighting && map.length > 0,
   );
   const displayPosition = visual.read();
-  const reading = readingState(readingDocument, displayPosition);
-  const activeId = reading.activeId;
+  const activeId = activeAt(map, displayPosition);
   const readWordPosition = visual.read;
   const selected = rows[rowIndex.get(selectedId ?? "") ?? -1];
   const readyStems = !!(
@@ -278,17 +223,12 @@ function Player({
     root,
     playing: player.playing,
     disabled: toolsOpen || lrclibOpen,
-    activeId: reading.focusId,
+    activeId,
     fontSize,
     readPosition: readWordPosition,
     moving: visual.moving,
   });
   const pendingStart = useRef(false);
-  useLayoutEffect(() => {
-    // Opening a player is an explicit navigation: prepare the first reading
-    // target once, even before Play. A later pause never advances the reader.
-    follow.resume({ instant: true });
-  }, []);
   useLayoutEffect(() => {
     if (player.jump.sequence && player.jump.source === "internal") {
       pendingStart.current = false;
@@ -434,7 +374,7 @@ function Player({
   return (
     <div
       ref={root}
-      className={`music-player${clean ? " player-clean" : ""}${mobileSettings ? " player-settings-open" : ""}`}
+      className={`music-player${clean ? " player-clean" : ""}`}
       data-rewinding={visual.moving ? "true" : "false"}
       style={{ "--player-font-size": `${fontSize}px` } as CSSProperties}
     >
@@ -485,19 +425,6 @@ function Player({
         <div className="player-actions">
           <button
             type="button"
-            className="player-mobile-settings"
-            aria-label={t("Настройки плеера")}
-            aria-expanded={mobileSettings}
-            aria-controls="player-side-settings"
-            onClick={() => {
-              setMobileSettings(!mobileSettings);
-              if (clean) setClean(false);
-            }}
-          >
-            <SlidersHorizontal size={18} />
-          </button>
-          <button
-            type="button"
             aria-pressed={clean}
             onClick={() => setClean(!clean)}
           >
@@ -519,7 +446,7 @@ function Player({
       )}
 
       <div className="player-workspace">
-        <aside className="player-side" id="player-side-settings">
+        <aside className="player-side">
           <label>
             {t("Режим звучания")}{" "}
             <select
@@ -567,86 +494,75 @@ function Player({
           </label>
           <details className="player-settings">
             <DisclosureSummary>{t("Настройки исполнения")}</DisclosureSummary>
-            <fieldset className="player-setting-group">
-              <legend>{t("Текст и чтение")}</legend>
-              <label className="word-highlight-toggle">
-                <input
-                  type="checkbox"
-                  checked={highlighting}
-                  onChange={(event) => setHighlighting(event.target.checked)}
-                />
-                {t("Подсветка текста")}
-              </label>
-              <label className="word-highlight-toggle">
-                <input
-                  type="checkbox"
-                  checked={approximate}
-                  onChange={(event) => setApproximate(event.target.checked)}
-                />
-                {t("Приблизительная подсветка слов")}
-              </label>
-              <details className="player-setting-help">
-                <DisclosureSummary>{t("О подсветке")}</DisclosureSummary>
-                <p className="player-hint">
-                  {t(
-                    "Оценка по длительности строки, а не распознавание. Долгие интервалы и проигрыши остаются с подсветкой строки. Реальные отметки слов используются всегда.",
-                  )}
-                </p>
-              </details>
-              <label>
-                {t("Размер текста ·")} {fontSize}
-                <input
-                  aria-label={t("Размер текста")}
-                  type="range"
-                  min="18"
-                  max="60"
-                  step="1"
-                  value={fontSize}
-                  onChange={(event) =>
-                    onSettings({
-                      ...song.performance,
-                      fontSize: Number(event.target.value),
-                    })
-                  }
-                />
-              </label>
-            </fieldset>
-            <fieldset className="player-setting-group">
-              <legend>{t("Звучание")}</legend>
-              <label>
-                {t("Скорость")}{" "}
-                <select
-                  value={player.rate}
-                  onChange={(event) =>
-                    player.setRate(Number(event.target.value))
-                  }
-                >
-                  {[0.5, 0.65, 0.75, 0.85, 1, 1.1, 1.25, 1.5].map((rate) => (
-                    <option key={rate} value={rate}>
-                      {rate}×
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="player-hint">
-                {t("Высота тона сохраняется средствами браузера.")}{" "}
-              </p>
-              <label>
-                {t("Громкость")}{" "}
-                <input
-                  aria-label={t("Громкость")}
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={player.volume}
-                  disabled={player.mode === "text"}
-                  onChange={(event) =>
-                    player.setVolume(Number(event.target.value))
-                  }
-                />
-              </label>
-            </fieldset>
+            <label className="word-highlight-toggle">
+              <input
+                type="checkbox"
+                checked={highlighting}
+                onChange={(event) => setHighlighting(event.target.checked)}
+              />
+              {t("Подсветка текста")}
+            </label>
+            <label className="word-highlight-toggle">
+              <input
+                type="checkbox"
+                checked={approximate}
+                onChange={(event) => setApproximate(event.target.checked)}
+              />
+              {t("Приблизительная подсветка слов")}
+            </label>
+            <p className="player-hint">
+              {t(
+                "Оценка по длительности строки, а не распознавание. Долгие интервалы и проигрыши остаются с подсветкой строки. Реальные отметки слов используются всегда.",
+              )}
+            </p>
+            <label>
+              {t("Размер текста ·")} {fontSize}
+              <input
+                aria-label={t("Размер текста")}
+                type="range"
+                min="18"
+                max="60"
+                step="1"
+                value={fontSize}
+                onChange={(event) =>
+                  onSettings({
+                    ...song.performance,
+                    fontSize: Number(event.target.value),
+                  })
+                }
+              />
+            </label>
+            <label>
+              {t("Скорость")}{" "}
+              <select
+                value={player.rate}
+                onChange={(event) => player.setRate(Number(event.target.value))}
+              >
+                {[0.5, 0.65, 0.75, 0.85, 1, 1.1, 1.25, 1.5].map((rate) => (
+                  <option key={rate} value={rate}>
+                    {rate}×
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="player-hint">
+              {t("Высота тона сохраняется средствами браузера.")}{" "}
+            </p>
+            <label>
+              {t("Громкость")}{" "}
+              <input
+                aria-label={t("Громкость")}
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={player.volume}
+                disabled={player.mode === "text"}
+                onChange={(event) =>
+                  player.setVolume(Number(event.target.value))
+                }
+              />
+            </label>
             <div className="player-loop">
               <p>{t("Повтор A–B")}</p>
               <div className="player-actions">
@@ -799,23 +715,20 @@ function Player({
               </div>
               {toolMode === "manual" && (
                 <>
-                  {(!selected ||
-                    linePresentation(selected).kind !== "instrumental") && (
-                    <SyncMarker
-                      song={working}
-                      selectedId={selectedId}
-                      select={(id) => select(id, false)}
-                      currentTime={player.readPosition}
-                      onChange={markChange}
-                      onUndo={undo}
-                      canUndo={!!history.length}
-                      onRecord={() => void player.play()}
-                      enabled={canPlay && player.mode !== "text"}
-                      onMarkRef={(action) => {
-                        markAction.current = action;
-                      }}
-                    />
-                  )}
+                  <SyncMarker
+                    song={working}
+                    selectedId={selectedId}
+                    select={(id) => select(id, false)}
+                    currentTime={player.readPosition}
+                    onChange={markChange}
+                    onUndo={undo}
+                    canUndo={!!history.length}
+                    onRecord={() => void player.play()}
+                    enabled={canPlay && player.mode !== "text"}
+                    onMarkRef={(action) => {
+                      markAction.current = action;
+                    }}
+                  />
                   {selected && (
                     <TimingEditor
                       song={working}
@@ -823,12 +736,8 @@ function Player({
                       transport={{
                         currentTime: player.readPosition,
                         listen: player.listen,
-                        canMark: canPlay && player.mode !== "text",
                       }}
                       onSave={(line) => change(replaceLine(working, line))}
-                      onSaveChords={(line) =>
-                        markChange(replaceLine(working, line))
-                      }
                     />
                   )}
                 </>
@@ -848,113 +757,59 @@ function Player({
               </p>
             </div>
           )}
-          {!toolsOpen && (
-            <ReadingCue
-              state={reading}
-              song={working}
-              position={player.position}
-              playing={player.playing || visual.moving}
-              readPosition={readWordPosition}
-              highlighting={highlighting}
-            />
-          )}
           <div
             ref={lyricReader}
             className="player-lyrics"
             tabIndex={0}
             aria-label={t("Текст песни")}
           >
-            {working.sections
-              .filter(
-                (section) =>
-                  toolsOpen ||
-                  section.lines.some(
-                    (line) => linePresentation(line).kind !== "strum",
-                  ),
-              )
-              .map((section) => (
-                <section key={section.id} className="player-section">
-                  <button
-                    type="button"
-                    className="player-section-name"
-                    onClick={() => {
-                      if (section.lines[0]) select(section.lines[0].id);
-                    }}
-                  >
-                    {sectionPresentation(section).name}
-                    {sectionPresentation(section).repeats && (
-                      <span className="section-repeats">
-                        {" "}
-                        ·{" "}
-                        {t("Повторов: {count}", {
-                          count: sectionPresentation(section).repeats,
-                        })}
-                      </span>
-                    )}
-                  </button>
-                  {section.lines.map((line) => {
-                    const presentation = linePresentation(line);
-                    if (presentation.kind === "strum")
-                      return toolsOpen ? (
-                        <p key={line.id} className="section-strum">
-                          {line.text}
-                        </p>
-                      ) : null;
-                    if (presentation.kind === "instrumental")
-                      return (
-                        <InstrumentRow
-                          key={line.id}
-                          line={line}
-                          song={working}
-                          index={rowIndex.get(line.id)!}
-                          following={line.id === reading.focusId}
-                          selected={selectedId === line.id}
-                          position={displayPosition}
-                          readPosition={readWordPosition}
-                          highlighting={highlighting}
-                          onSelect={chooseLine}
-                          onMark={(id) => {
-                            select(id, false);
-                            setToolMode("manual");
-                          }}
-                        />
-                      );
-                    const plan = wordPlans.get(line.id);
-                    const position = plan
-                      ? line.id === activeId
-                        ? displayPosition
-                        : displayPosition >= plan.words.at(-1)!.end
-                          ? Infinity
-                          : -Infinity
-                      : undefined;
-                    return (
-                      <PlayerLyricRow
-                        key={line.id}
-                        line={line}
-                        song={working}
-                        index={rowIndex.get(line.id)!}
-                        active={line.id === activeId}
-                        following={line.id === reading.focusId}
-                        selected={selectedId === line.id}
-                        past={
-                          (timingById.get(line.id)?.end ?? Infinity) <=
-                          displayPosition
-                        }
-                        position={position}
-                        plan={plan}
-                        playing={
-                          line.id === activeId &&
-                          (player.playing || visual.moving)
-                        }
-                        highlighting={highlighting}
-                        readPosition={readWordPosition}
-                        activeRef={activeElement}
-                        onSelect={chooseLine}
-                      />
-                    );
-                  })}
-                </section>
-              ))}
+            {working.sections.map((section) => (
+              <section key={section.id} className="player-section">
+                <button
+                  type="button"
+                  className="player-section-name"
+                  onClick={() => {
+                    if (section.lines[0]) select(section.lines[0].id);
+                  }}
+                >
+                  {section.name}
+                </button>
+                {section.lines.map((line) => {
+                  const plan = wordPlans.get(line.id);
+                  const position = plan
+                    ? line.id === activeId
+                      ? displayPosition
+                      : displayPosition >= plan.words.at(-1)!.end
+                        ? Infinity
+                        : -Infinity
+                    : undefined;
+                  return (
+                    <PlayerLyricRow
+                      key={line.id}
+                      line={line}
+                      song={working}
+                      index={rowIndex.get(line.id)!}
+                      active={line.id === activeId}
+                      selected={selectedId === line.id}
+                      past={
+                        (timingById.get(line.id)?.end ?? Infinity) <=
+                        displayPosition
+                      }
+                      position={position}
+                      plan={plan}
+                      playing={
+                        line.id === activeId &&
+                        (player.playing || visual.moving)
+                      }
+                      highlighting={highlighting}
+                      readPosition={readWordPosition}
+                      activeRef={activeElement}
+                      onSelect={chooseLine}
+                    />
+                  );
+                })}
+              </section>
+            ))}
           </div>
         </section>
       </div>
@@ -1006,19 +861,15 @@ function Player({
               type="button"
               disabled={!rows.length}
               onClick={() => move(-1)}
-              aria-label={t("↑ Строка")}
             >
-              <ChevronUp size={17} />
-              <span>{t("Строка")}</span>
+              {t("↑ Строка")}{" "}
             </button>
             <button
               type="button"
               disabled={!rows.length}
               onClick={() => move(1)}
-              aria-label={t("↓ Строка")}
             >
-              <ChevronDown size={17} />
-              <span>{t("Строка")}</span>
+              {t("↓ Строка")}{" "}
             </button>
           </div>
         </div>

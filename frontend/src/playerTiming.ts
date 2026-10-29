@@ -1,6 +1,5 @@
 import type { Line, Song } from "./model";
-import { validWords, validWordStarts } from "./timeline";
-import { linePresentation } from "./songPresentation";
+import { validWords } from "./timeline";
 
 export const finiteTime = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
@@ -8,25 +7,18 @@ export const allLines = (song: Song) => song.sections.flatMap((s) => s.lines);
 export function lineStart(line: Line) {
   if (line.timingReview) return undefined;
   const start =
-    line.start ??
-    (validWords(line) ? line.words?.[0]?.start : undefined) ??
-    (validWordStarts(line) ? line.wordStarts?.[0]?.start : undefined);
+    line.start ?? (validWords(line) ? line.words?.[0]?.start : undefined);
   return finiteTime(start) ? start : undefined;
 }
 export function playerMap(song: Song, duration?: number) {
   const lines = allLines(song);
   return lines
     .flatMap((line, i) => {
-      if (linePresentation(line).kind === "strum") return [];
       const start = lineStart(line);
       const end =
         line.end ??
         (validWords(line) ? line.words?.at(-1)?.end : undefined) ??
-        lines
-          .slice(i + 1)
-          .map(lineStart)
-          .find(finiteTime) ??
-        duration;
+        (lines[i + 1] ? lineStart(lines[i + 1]) : duration);
       return start !== undefined && finiteTime(end) && end > start
         ? [{ line, start, end }]
         : [];

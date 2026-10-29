@@ -3,8 +3,6 @@ import DisclosureSummary from "./DisclosureSummary";
 import { useEffect, useRef, useState } from "react";
 import type { Line, Song } from "./model";
 import { validWords } from "./timeline";
-import { instrumentNames, linePresentation } from "./songPresentation";
-import ChordTimingEditor from "./ChordTimingEditor";
 
 export default function TimingEditor({
   song,
@@ -12,7 +10,6 @@ export default function TimingEditor({
   onSave,
   disabled = false,
   transport,
-  onSaveChords,
 }: {
   song: Song;
   line: Line;
@@ -21,12 +18,9 @@ export default function TimingEditor({
   transport?: {
     currentTime: () => number;
     listen: (start: number, end?: number) => void;
-    canMark?: boolean;
   };
-  onSaveChords?: (line: Line) => void;
 }) {
   const { t, locale } = useI18n();
-  const instrumental = linePresentation(line).kind === "instrumental";
   const player = useRef<HTMLAudioElement>(null);
   const until = useRef<number | null>(null);
   const [start, setStart] = useState("");
@@ -165,26 +159,14 @@ export default function TimingEditor({
     </label>
   );
   return (
-    <details className="timing-editor" open={instrumental || undefined}>
+    <details className="timing-editor">
       <DisclosureSummary>
-        {t(
-          instrumental
-            ? "Разметка инструментальной последовательности"
-            : "Проверка разметки выбранной строки",
-        )}
+        {t("Проверка разметки выбранной строки")}
       </DisclosureSummary>
-      <p>
-        {instrumental
-          ? instrumentNames(line, song.palette)
-              .map((item) => item.name)
-              .join(" · ") || t("Инструментальная строка")
-          : line.text}
-      </p>
+      <p>{line.text || t("Инструментальная строка")}</p>
       <p className="muted">
         {t(
-          instrumental
-            ? "Отметки берутся из общего плеера. Границы строки необязательны для отметок отдельных аккордов."
-            : "Времена в секундах оригинала. Исправьте границы выбранной строки или отдельные слова. Равномерная разметка не создаётся.",
+          "Времена в секундах оригинала. Исправьте границы выбранной строки или отдельные слова. Равномерная разметка не создаётся.",
         )}
       </p>
       {line.timingReview && (
@@ -224,15 +206,6 @@ export default function TimingEditor({
         </p>
       )}
       <fieldset disabled={disabled}>
-        {instrumental && line.chords.length > 0 && transport && (
-          <ChordTimingEditor
-            line={line}
-            song={song}
-            currentTime={transport.currentTime}
-            onSave={onSaveChords ?? onSave}
-            enabled={!!song.audio && !disabled && transport.canMark !== false}
-          />
-        )}
         <div className="timing-fields">
           {timeInput(t("Начало строки"), start, setStart)}
           {timeInput(t("Конец строки"), end, setEnd)}
@@ -240,16 +213,14 @@ export default function TimingEditor({
             {t("Прослушать строку")}
           </button>
         </div>
-        {!instrumental && (
-          <label>
-            <input
-              type="checkbox"
-              checked={wordMode}
-              onChange={(e) => setWordMode(e.target.checked)}
-            />{" "}
-            {t("Отметки каждого слова")}
-          </label>
-        )}
+        <label>
+          <input
+            type="checkbox"
+            checked={wordMode}
+            onChange={(e) => setWordMode(e.target.checked)}
+          />{" "}
+          {t("Отметки каждого слова")}
+        </label>
         {wordMode &&
           words.map((word, i) => (
             <div key={i} className="timing-fields">

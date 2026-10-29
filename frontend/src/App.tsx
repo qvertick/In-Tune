@@ -32,12 +32,10 @@ import {
   BookOpen,
   Save,
 } from "lucide-react";
-import { APP_NAME, PRODUCT_NAME } from "./config";
-import { NAV_KEYS, readSetting, useNavigation, type View } from "./navigation";
+import { APP_NAME } from "./config";
 import { createSong, id, normalizeChord, type Song, type Line } from "./model";
 const Performance = lazy(() => import("./Performance"));
 const LrclibDialog = lazy(() => import("./LrclibDialog"));
-const Welcome = lazy(() => import("./Welcome"));
 import PolicyFooter from "./PolicyFooter";
 import SourceSearch from "./SourceSearch";
 import SongStatus from "./SongStatus";
@@ -447,41 +445,17 @@ export const Lyrics = memo(function Lyrics({
 });
 function AppContent() {
   const { t, locale, setLocale, formatDate } = useI18n();
-  const { route, navigate, welcomeAtStartup, setWelcomeAtStartup } =
-    useNavigation();
-  const view = route.view;
   const [songs, setSongs] = useState<Song[]>([]);
-  const [selected, setSelected] = useState<string | null>(
-    () => route.songId ?? readSetting(NAV_KEYS.song),
-  );
-  function setView(view: View) {
-    navigate({
-      view,
-      songId:
-        view === "editor" || view === "performance"
-          ? (selected ?? undefined)
-          : undefined,
-    });
-  }
-  useLayoutEffect(() => {
-    if (route.songId) {
-      setSelected(route.songId);
-      setPast([]);
-      setFuture([]);
-      setEditing(null);
-      setTarget(null);
-      setMoving(null);
-    }
-  }, [route.songId]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [view, setView] = useState<
+    "library" | "editor" | "performance" | "settings"
+  >("library");
   const [query, setQuery] = useState("");
   const [libraryMode, setLibraryMode] = useState<"local" | "sources">("local");
   const [sourceSearchNonce, setSourceSearchNonce] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [syncSearch, setSyncSearch] = useState(false);
-  const [playerPanel, setPlayerPanel] = useState<
-    "sync" | "mixer" | undefined
-  >();
   const [states, setStates] = useState<Record<string, string>>({});
   const [past, setPast] = useState<Song[]>([]);
   const [future, setFuture] = useState<Song[]>([]);
@@ -689,7 +663,7 @@ function AppContent() {
   }
   function open(songId: string) {
     setSelected(songId);
-    navigate({ view: "editor", songId });
+    setView("editor");
     setPast([]);
     setFuture([]);
     setEditing(null);
@@ -884,59 +858,19 @@ function AppContent() {
       .flatMap((s) => s.lines)
       .flatMap((l) => l.chords)
       .filter((c) => c.paletteId === from).length || 0;
-  const lastSong = songs.find((item) => item.id === readSetting(NAV_KEYS.song));
-  if (view === "welcome")
-    return (
-      <Suspense fallback={null}>
-        <Welcome
-          onLibrary={(search = false) => {
-            setLibraryMode(search ? "sources" : "local");
-            setView("library");
-          }}
-          onContinue={lastSong ? () => open(lastSong.id) : undefined}
-          lastTitle={lastSong?.title}
-          hasAudio={!!lastSong?.audio}
-          onWorkspace={(panel) => {
-            if (!lastSong) {
-              setLibraryMode("local");
-              setView("library");
-              return;
-            }
-            setSelected(lastSong.id);
-            if (panel === "mixer" && !lastSong.audio) {
-              navigate({view:"editor", songId:lastSong.id});
-              return;
-            }
-            setPlayerPanel(panel);
-            navigate({ view: "performance", songId: lastSong.id });
-          }}
-        />
-      </Suspense>
-    );
   return (
-    <div className={`app app-${view}`}>
-      <a className="skip-link" href="#workspace-main">
-        {t("К содержимому")}
-      </a>
+    <div className="app">
       <aside className="sidebar">
-        <button
-          className="brand"
-          aria-label={t("Открыть приветствие")}
-          title={t("Открыть приветствие")}
-          onClick={() => setView("welcome")}
-        >
+        <button className="brand" onClick={() => setView("library")}>
           <span className="brand-mark">
             <Music2 size={23} />
           </span>
-          <span className="brand-name">
-            {PRODUCT_NAME}
-            <small>{APP_NAME}</small>
-          </span>
+          {APP_NAME}
+          <span className="local-dot" title={t("Локальное приложение")} />
         </button>
         <nav>
           <button
             className={view === "library" ? "active" : ""}
-            aria-current={view === "library" ? "page" : undefined}
             onClick={() => setView("library")}
           >
             <Library size={19} />
@@ -956,7 +890,6 @@ function AppContent() {
           )}
           <button
             className={view === "settings" ? "active" : ""}
-            aria-current={view === "settings" ? "page" : undefined}
             onClick={() => setView("settings")}
           >
             <Settings2 size={19} />
@@ -968,7 +901,7 @@ function AppContent() {
           <p>{t("Ваша музыка остаётся у вас.")}</p>
         </div>
       </aside>
-      <main id="workspace-main">
+      <main>
         <input
           ref={importer}
           type="file"
@@ -1071,7 +1004,7 @@ function AppContent() {
                 />
               </label>
               <span className="muted">
-                {t("Песен: {count}", { count: songs.length })}
+                {songs.length} {t(" песен")}
               </span>
             </div>
             <div className="library-mode" aria-label={t("Где искать")}>
@@ -1148,7 +1081,7 @@ function AppContent() {
                         {s.audio ? t("С аудио") : t("Текст и аккорды")}
                         <small>
                           {s.origin
-                            ? `${SOURCE_NAMES[s.origin.site] || s.origin.site}${s.origin.variant ? ` · ${s.origin.variant}` : ""}`
+                            ? t("Разбор импортирован")
                             : s.source === "model"
                               ? t("Черновик анализа")
                               : t("Ручная редакция")}
@@ -1648,8 +1581,6 @@ function AppContent() {
           <Suspense fallback={<p role="status">{t("Загрузка…")}</p>}>
             <Performance
               song={song}
-              initialPanel={playerPanel}
-              onPanelOpened={() => setPlayerPanel(undefined)}
               onSong={update}
               saveStatus={states[song.id] || "Сохранено"}
               onBack={() => setView("editor")}
@@ -1665,46 +1596,10 @@ function AppContent() {
           <div className="settings-page">
             <p className="overline">{t("На этом компьютере")}</p>
             <h1>{t("Настройки")}</h1>
-            <p className="settings-intro">
-              {t("Твоё пространство. Твои привычки.")}
-            </p>
-            <section className="startup-setting">
-              <div className="settings-section-heading">
-                <span>01</span>
-                <h2>{t("Начало работы")}</h2>
-              </div>
-              <label className="setting-toggle">
-                <input
-                  type="checkbox"
-                  aria-label={t("Показывать приветствие при запуске")}
-                  aria-describedby="welcome-startup-description"
-                  checked={welcomeAtStartup}
-                  onChange={(event) =>
-                    setWelcomeAtStartup(event.target.checked)
-                  }
-                />
-                <span>
-                  {t("Показывать приветствие при запуске")}
-                  <small id="welcome-startup-description">
-                    {t("Прямые ссылки на песни всегда открывают песню.")}
-                  </small>
-                </span>
-              </label>
-              <button
-                className="text-button"
-                onClick={() => setView("welcome")}
-              >
-                {t("Открыть приветствие")}
-                <MoveRight size={16} />
-              </button>
-            </section>
             <section>
-              <div className="settings-section-heading">
-                <span>02</span>
-                <h2>{t("Язык интерфейса")}</h2>
-              </div>
+              <h2>{t("Язык интерфейса")}</h2>
               <label>
-                <span className="sr-only">{t("Язык интерфейса")}</span>
+                {t("Язык интерфейса")}
                 <select
                   value={locale}
                   onChange={(event) =>
@@ -1717,10 +1612,7 @@ function AppContent() {
               </label>
             </section>
             <section>
-              <div className="settings-section-heading">
-                <span>03</span>
-                <h2>{t("Локальные данные")}</h2>
-              </div>
+              <h2>{t("Локальные данные")}</h2>
               <p className="muted">
                 {t(
                   "Песни и аудио хранятся на этом компьютере. Каталог меняется перед запуском через VLAD_DATA_DIR.",
@@ -1733,18 +1625,15 @@ function AppContent() {
               </code>
             </section>
             <section>
-              <div className="settings-section-heading">
-                <span>04</span>
-                <h2>{t("Аудио и модели")}</h2>
-              </div>
+              <h2>{t("Аудио и модели")}</h2>
               <p>{t("Редактор и плеер работают без моделей.")}</p>
+              <p className="muted">
+                {t(
+                  "Разметка строк под запись и импорт LRC не требуют моделей. Распознавание Whisper оставлено как необязательный инструмент. Разделение вокала и сопровождения устанавливается отдельно; его состояние показано в плеере. Модели при запуске не скачиваются.",
+                )}
+              </p>
               <details>
                 <DisclosureSummary>{t("Подробности")}</DisclosureSummary>
-                <p className="muted">
-                  {t(
-                    "Разметка строк под запись и импорт LRC не требуют моделей. Распознавание Whisper оставлено как необязательный инструмент. Разделение вокала и сопровождения устанавливается отдельно; его состояние показано в плеере. Модели при запуске не скачиваются.",
-                  )}
-                </p>
                 <p>
                   Whisper tiny:{" "}
                   {health
@@ -1770,26 +1659,13 @@ function AppContent() {
               </details>
             </section>
             <section>
-              <div className="settings-section-heading">
-                <span>05</span>
-                <h2>{t("Оформление")}</h2>
-              </div>
+              <h2>{t("Оформление")}</h2>
               <p>
                 {t(
                   "Тёмная тема. Размер текста исполнения сохраняется отдельно для каждой песни.",
                 )}
               </p>
             </section>
-          </div>
-        )}
-        {!loading && (view === "editor" || view === "performance") && !song && (
-          <div className="empty">
-            <Music2 size={38} />
-            <h1>{t("Песня не найдена")}</h1>
-            <p>{t("Возможно, она удалена из локальной библиотеки.")}</p>
-            <button className="primary" onClick={() => setView("library")}>
-              {t("Открыть библиотеку")}
-            </button>
           </div>
         )}
         {view !== "performance" && <PolicyFooter />}
@@ -1910,12 +1786,7 @@ function AppContent() {
                   delete next[deleting];
                   return next;
                 });
-                if (selected === deleting) {
-                  setSelected(null);
-                  setView("library");
-                }
-                if (readSetting(NAV_KEYS.song) === deleting)
-                  localStorage.removeItem(NAV_KEYS.song);
+                if (selected === deleting) setSelected(null);
                 setDeleteId(null);
               } catch (e) {
                 setError((e as Error).message);

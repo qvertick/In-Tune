@@ -1,37 +1,5 @@
 /** Translations shared with Performance, LRCLIB, the lyric rows and policy dialogs. */
 const extrasMessages: Record<string, string> = {
-  "Песен: {count}": "Songs: {count}",
-  "Текст и чтение": "Text and reading",
-  "Настройки плеера": "Player settings",
-  "О подсветке": "About highlighting",
-  "Разметка инструментальной последовательности":
-    "Instrumental sequence timing",
-  "Отметки берутся из общего плеера. Границы строки необязательны для отметок отдельных аккордов.":
-    "Timestamps use the shared player. Line bounds are optional for individual chord timestamps.",
-  Звучание: "Sound",
-  "Повторов: {count}": "Repeats: {count}",
-  "Инструментальная часть": "Instrumental passage",
-  "Конец фразы не отмечен": "Phrase end not marked",
-  "Конец фразы требует проверки": "Check the phrase end",
-  "Вокал через {seconds} с": "Vocals in {seconds} s",
-  "Сейчас звучит": "Playing now",
-  Далее: "Up next",
-  Начало: "Start",
-  Конец: "End",
-  "Разметить аккорды": "Mark chord changes",
-  "Времена инструментальных аккордов": "Instrumental chord timing",
-  "Смены аккордов": "Chord changes",
-  "Слушайте запись и отмечайте реальные смены. Повторы не получают выдуманные времена.":
-    "Listen and mark actual changes. Repeats are never assigned invented timestamps.",
-  "Отметить следующий аккорд": "Mark next chord",
-  "Отметить конец аккордов": "Mark chord sequence end",
-  "Начало аккорда {name}": "Chord start: {name}",
-  "Конец аккорда {name}": "Chord end: {name}",
-  "Сохранить времена аккордов": "Save chord timing",
-  "Отметки аккордов должны идти по порядку.":
-    "Chord timestamps must follow their source order.",
-  "Проверьте времена аккордов: по порядку, без пересечений.":
-    "Check chord times: ordered and without overlaps.",
   "К текущей строке": "Back to current line",
   "Подсветка текста": "Text highlighting",
   "Повторить запрос": "Retry request",

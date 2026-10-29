@@ -1,6 +1,5 @@
 import type { Line } from "./model";
 import { validWords, validWordStarts } from "./timeline";
-import { linePresentation } from "./songPresentation";
 
 export type WordPlan = {
   kind: "exact" | "word-starts" | "approximate";
@@ -14,7 +13,6 @@ export function wordPlan(
   end?: number,
   approximate = false,
 ): WordPlan | undefined {
-  if (linePresentation(line).kind !== "vocal") return;
   if (validWords(line)) return { kind: "exact", words: line.words! };
   if (validWordStarts(line))
     return {

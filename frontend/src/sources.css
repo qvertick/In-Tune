@@ -1,3 +1,14 @@
+.library-mode {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 24px;
+  flex-wrap: wrap;
+}
+.library-mode button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
 .source-search {
   max-width: 1100px;
 }

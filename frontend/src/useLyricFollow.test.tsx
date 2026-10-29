@@ -230,21 +230,6 @@ it("anchors the active glyph at 30% of the reader clipped by transport, with no 
   expect(f.api.suspended).toBe(false);
 });
 
-it("follows an upcoming row through an instrumental gap without an active word or sung aria-current", () => {
-  const f = fixture({ playing: true });
-  f.row.removeAttribute("aria-current");
-  f.row.dataset.followRow = "true";
-  f.word.classList.remove("word-active");
-  f.word.removeAttribute("data-follow-word");
-  f.layout({ glyphTops: [1200, 1200, 1200, 1200] });
-  act(() => f.api.update({ force: true }));
-  expect(f.readerScroll).toHaveBeenLastCalledWith({
-    top: 935,
-    behavior: "instant",
-  });
-  expect(f.row.hasAttribute("aria-current")).toBe(false);
-});
-
 it("reanchors a new row but only follows word movement when it leaves the reading zone", () => {
   const f = fixture({ playing: true });
   f.layout({ glyphTops: [1050, 1050, 1050, 1050] });
