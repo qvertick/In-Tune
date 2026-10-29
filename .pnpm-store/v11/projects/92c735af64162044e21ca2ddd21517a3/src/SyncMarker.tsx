@@ -1,7 +1,7 @@
 import { useI18n, translateError } from "./i18n";
 import { useState } from "react";
 import type { Song } from "./model";
-import { isServiceLine } from "./lrc";
+import { linePresentation } from "./songPresentation";
 import {
   allLines,
   formatTime,
@@ -37,7 +37,9 @@ export default function SyncMarker({
   const { t, locale } = useI18n();
   const [error, setError] = useState(""),
     [shift, setShift] = useState("0");
-  const lines = allLines(song).filter((line) => !isServiceLine(line.text)),
+  const lines = allLines(song).filter(
+      (line) => linePresentation(line).kind === "vocal",
+    ),
     index = lines.findIndex((line) => line.id === selectedId),
     selected = lines[index];
   function attempt(action: () => void) {
