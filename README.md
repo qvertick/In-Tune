@@ -16,20 +16,4 @@
 
 
 ##
-## How to Use __In Tune__ ? 
 
-Get started with In Tune in just a few steps.
-
-**Watch the quick introduction:**
-
-[▶ Watch the video tutorial](Img/tutorial.mp4)
-
-### The basic workflow
-
-1. **Import a song** — Find an existing chord arrangement or add your own lyrics and chords.
-2. **Add your audio** — Attach an MP3 file from your computer.
-3. **Sync the lyrics** — Search for matching synchronized lyrics or create your own timing manually.
-4. **Fine-tune your arrangement** — Edit chords, lyrics, sections, and timing.
-5. **Play and enjoy** — Follow your song in real time with synchronized lyrics and chords.
-
-Everything is stored locally on your computer. No account or subscription!
