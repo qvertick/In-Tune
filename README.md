@@ -16,4 +16,19 @@
 
 
 ##
+## 🛠 Requirements
+* **Python 3.12+** (64-bit version recommended)[cite: 1]
+* **Node.js 22+** and **pnpm** (for building the frontend)[cite: 1]
+* **FFmpeg** (required for audio separation, must be added to the system `PATH`)[cite: 1]
 
+## 🚀 Quick Start (Installation)
+
+The project includes a single cross-platform setup script (`setup.py`) that will automatically create virtual environments, install all backend and frontend dependencies, build the interface, and download necessary components—everything needed for the **In-Tune** web application to work correctly.
+
+The **run.py** script starts the website on your local host.
+
+Run the following commands in the project's root directory:
+
+```bash
+python setup.py
+python run.py
